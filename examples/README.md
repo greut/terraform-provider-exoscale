@@ -53,6 +53,10 @@ Having one elastic IP address linked to two (or more) instances.
 
 Using the [Terraform AWS Provider](https://www.terraform.io/docs/providers/aws/) with the [Exoscale Object Storage](https://www.exoscale.com/object-storage/) to manage a bucket.
 
+## [Salt](salt)
+
+Setting up a [salt](https://www.saltstack.com/) flock.
+
 ## External examples
 
 - Oliver Moser's: [Prometheus Service Discovery Demo](https://github.com/olmoser/infracoders-reloaded)

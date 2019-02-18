@@ -1,0 +1,15 @@
+#cloud-config
+
+manage_etc_hosts: true
+fqdn: ${hostname}
+
+package_update: true
+package_upgrade: true
+
+packages:
+- salt-minion
+
+runcmd:
+- [ sed, -i, "s/#master: salt/master: ${master_ip}/", /etc/salt/minion ]
+- [ sed, -i, "s/#id:/id: ${hostname}/", /etc/salt/minion ]
+- [ systemctl, restart, salt-minion ]

@@ -1,0 +1,20 @@
+#cloud-config
+
+manage_etc_hosts: true
+fqdn: ${hostname}
+
+package_update: true
+package_upgrade: true
+
+packages:
+- golang-cfssl
+- salt-api
+- salt-master
+- salt-minion
+
+runcmd:
+- [ sed, -i, "s/#interface: 0.0.0.0/interface: 0.0.0.0/", /etc/salt/master ]
+- [ systemctl, restart, salt-master ]
+- [ systemctl, restart, salt-minion ]
+- [ sed, -i, "s/#master: salt/master: localhost/", /etc/salt/minion ]
+- [ sed, -i, "s/#id:/id: ${hostname}/", /etc/salt/minion ]
