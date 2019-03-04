@@ -5,3 +5,4 @@ output "exokube_ssh" {
 output "exokube_https" {
   value = "https://${exoscale_compute.exokube.ip_address}.xip.io"
 }
+

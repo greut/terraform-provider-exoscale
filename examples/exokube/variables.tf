@@ -1,6 +1,11 @@
-variable "key" {}
-variable "secret" {}
-variable "key_pair" {}
+variable "key" {
+}
+
+variable "secret" {
+}
+
+variable "key_pair" {
+}
 
 variable "zone" {
   default = "ch-dk-2"
@@ -21,3 +26,4 @@ variable "docker_version" {
 variable "calico_version" {
   default = "3.5"
 }
+
