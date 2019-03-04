@@ -1,15 +1,19 @@
-variable "key" {}
-variable "secret" {}
-variable "key_pair" {}
+variable "key" {
+}
 
+variable "secret" {
+}
+
+variable "key_pair" {
+}
 
 // hostnames are used as a source
 variable "hostnames" {
-  type = "list"
+  type = list(string)
   default = [
     "huey",
     "dewey",
-    "louie"
+    "louie",
   ]
 }
 
