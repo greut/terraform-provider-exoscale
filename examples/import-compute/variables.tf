@@ -1,2 +1,6 @@
-variable "key" {}
-variable "secret" {}
+variable "key" {
+}
+
+variable "secret" {
+}
+
