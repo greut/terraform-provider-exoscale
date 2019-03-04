@@ -1,15 +1,15 @@
 provider "template" {
-  version = "~> 1.0"
+  version = "~> 2.1"
 }
 
 provider "exoscale" {
-  version = "~> 0.9.41"
-  key = "${var.key}"
-  secret = "${var.secret}"
+  version = "~> 0.10"
+  key     = var.key
+  secret  = var.secret
 }
 
 resource "exoscale_affinity" "rke" {
-  name = "rke-nodes"
+  name        = "rke-nodes"
   description = "keep nodes of different hosts"
 }
 
@@ -19,47 +19,49 @@ resource "exoscale_security_group" "rke" {
 
 // https://rancher.com/docs/rancher/v2.x/en/installation/requirements/
 resource "exoscale_security_group_rules" "rke" {
-  security_group_id = "${exoscale_security_group.rke.id}"
+  security_group_id = exoscale_security_group.rke.id
 
   ingress {
-    protocol = "TCP"
+    protocol  = "TCP"
     cidr_list = ["0.0.0.0/0", "::/0"]
-    ports = ["22", "80", "443", "2376", "6443", "30000-32767"]
+    ports     = ["22", "80", "443", "2376", "6443", "30000-32767"]
   }
 
   ingress {
-    protocol = "UDP"
+    protocol  = "UDP"
     cidr_list = ["0.0.0.0/0", "::/0"]
-    ports = ["30000-32767"]
+    ports     = ["30000-32767"]
   }
 
   ingress {
-    protocol = "TCP"
-    user_security_group_list = ["${exoscale_security_group.rke.name}"]
-    ports = ["2379-2380", "4789", "10250-10252", "10256"]
+    protocol                 = "TCP"
+    user_security_group_list = [exoscale_security_group.rke.name]
+    ports                    = ["2379-2380", "4789", "10250-10252", "10256"]
   }
 
   ingress {
-    protocol = "UDP"
-    user_security_group_list = ["${exoscale_security_group.rke.name}"]
-    ports = ["8472", "30000-32767"]
+    protocol                 = "UDP"
+    user_security_group_list = [exoscale_security_group.rke.name]
+    ports                    = ["8472", "30000-32767"]
   }
-
 }
 
 resource "exoscale_compute" "node" {
-  count = "${length(var.hostnames)}"
-  display_name = "${element(var.hostnames, count.index)}"
-  template = "${var.template}"
-  zone = "${var.zone}"
-  size = "Medium"
-  disk_size = 50
+  count        = length(var.hostnames)
+  display_name = element(var.hostnames, count.index)
+  template     = var.template
+  zone         = var.zone
+  size         = "Medium"
+  disk_size    = 50
 
-  key_pair = "${var.key_pair}"
-  affinity_groups = ["${exoscale_affinity.rke.name}"]
-  security_groups = ["default", "${exoscale_security_group.rke.name}"]
+  key_pair        = var.key_pair
+  affinity_groups = [exoscale_affinity.rke.name]
+  security_groups = ["default", exoscale_security_group.rke.name]
 
-  user_data = "${element(data.template_cloudinit_config.config.*.rendered, count.index)}"
+  user_data = element(
+    data.template_cloudinit_config.config.*.rendered,
+    count.index,
+  )
 
   tags = {
     managedby = "terraform"
@@ -67,5 +69,13 @@ resource "exoscale_compute" "node" {
 }
 
 output "master_ips" {
-  value = "${join(",", formatlist("%s@%s", exoscale_compute.node.*.username, exoscale_compute.node.*.ip_address))}"
+  value = join(
+    ",",
+    formatlist(
+      "%s@%s",
+      exoscale_compute.node.*.username,
+      exoscale_compute.node.*.ip_address,
+    ),
+  )
 }
+
