@@ -123,7 +123,6 @@ func readAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 }
 
 func applyAffinityGroup(d *schema.ResourceData, affinity *egoscale.AffinityGroup) error {
-	d.SetId(affinity.ID.String())
 	if err := d.Set("name", affinity.Name); err != nil {
 		return err
 	}
