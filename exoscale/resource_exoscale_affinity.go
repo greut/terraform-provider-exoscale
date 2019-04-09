@@ -64,12 +64,16 @@ func createAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 		Description: d.Get("description").(string),
 		Type:        d.Get("type").(string),
 	}
+
 	resp, err := client.RequestWithContext(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	return applyAffinityGroup(d, resp.(*egoscale.AffinityGroup))
+	ag := resp.(*egoscale.AffinityGroup)
+	d.SetId(ag.ID.String())
+
+	return readAffinityGroup(d, meta)
 }
 
 func existsAffinityGroup(d *schema.ResourceData, meta interface{}) (bool, error) {
@@ -109,6 +113,7 @@ func readAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 	ag := &egoscale.AffinityGroup{
 		ID: id,
 	}
+
 	resp, err := client.GetWithContext(ctx, ag)
 	if err != nil {
 		return handleNotFound(d, err)
