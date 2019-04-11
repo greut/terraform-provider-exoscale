@@ -15,6 +15,15 @@ const defaultNetmask = "255.255.255.0"
 
 func networkResource() *schema.Resource {
 	s := map[string]*schema.Schema{
+		"zone": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"network_offering": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
 		"name": {
 			Type:     schema.TypeString,
 			Required: true,
@@ -23,15 +32,6 @@ func networkResource() *schema.Resource {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
-		},
-		"network_offering": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"zone": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
 		},
 		"start_ip": {
 			Type:         schema.TypeString,

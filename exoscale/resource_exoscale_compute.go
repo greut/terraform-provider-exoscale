@@ -18,6 +18,26 @@ import (
 
 func computeResource() *schema.Resource {
 	s := map[string]*schema.Schema{
+		"zone": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"template": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"disk_size": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntAtLeast(10),
+		},
+		"key_pair": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
 		"name": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -27,25 +47,10 @@ func computeResource() *schema.Resource {
 			Optional: true,
 			Computed: true,
 		},
-		"template": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
 		"size": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Default:  "Medium",
-		},
-		"disk_size": {
-			Type:         schema.TypeInt,
-			Required:     true,
-			ValidateFunc: validation.IntAtLeast(10),
-		},
-		"zone": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
 		},
 		"user_data": {
 			Type:        schema.TypeString,
@@ -56,11 +61,6 @@ func computeResource() *schema.Resource {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Description: "was the cloud-init configuration base64 encoded",
-		},
-		"key_pair": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
 		},
 		"keyboard": {
 			Type:     schema.TypeString,
