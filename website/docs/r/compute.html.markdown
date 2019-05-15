@@ -45,7 +45,10 @@ EOF
 
 ## Argument Reference
 
-- `display_name` - (Required) initial `hostname`
+- `display_name` - (Required) instance displayed name. Note: This value is also
+  used to set the OS' *hostname* during creation, so the value can only contain
+  alphanumeric and hyphen ("-") characters; it can be changed to any character
+  during a later update.
 
 - `template` - (Required) name or ID of the [template](https://www.exoscale.com/templates/).
 If a name is provided, only *featured* templates are available.
