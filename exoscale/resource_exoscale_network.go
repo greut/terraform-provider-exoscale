@@ -13,6 +13,10 @@ import (
 
 const defaultNetmask = "255.255.255.0"
 
+func resourceExoscaleNetworkIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_network")
+}
+
 func networkResource() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"zone": {
@@ -76,6 +80,8 @@ func networkResource() *schema.Resource {
 }
 
 func createNetwork(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleNetworkIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -146,10 +152,14 @@ func createNetwork(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleNetworkIDString(d))
+
 	return readNetwork(d, meta)
 }
 
 func readNetwork(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleNetworkIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -174,6 +184,9 @@ func readNetwork(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	network := networks.Network[0]
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleNetworkIDString(d))
+
 	return applyNetwork(d, &network)
 }
 
@@ -207,6 +220,8 @@ func existsNetwork(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func updateNetwork(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleNetworkIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
@@ -256,10 +271,14 @@ func updateNetwork(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleNetworkIDString(d))
+
 	return nil
 }
 
 func deleteNetwork(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleNetworkIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -275,6 +294,9 @@ func deleteNetwork(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleNetworkIDString(d))
+
 	return nil
 }
 

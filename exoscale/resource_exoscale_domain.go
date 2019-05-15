@@ -2,10 +2,15 @@ package exoscale
 
 import (
 	"context"
+	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleDomainIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_domain")
+}
 
 func domainResource() *schema.Resource {
 	return &schema.Resource{
@@ -51,6 +56,8 @@ func domainResource() *schema.Resource {
 }
 
 func createDomain(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleDomainIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -62,6 +69,9 @@ func createDomain(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(domain.Name)
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleDomainIDString(d))
+
 	return readDomain(d, meta)
 }
 
@@ -82,6 +92,8 @@ func existsDomain(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readDomain(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleDomainIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -92,10 +104,14 @@ func readDomain(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleDomainIDString(d))
+
 	return applyDomain(d, *domain)
 }
 
 func deleteDomain(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleDomainIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -105,6 +121,8 @@ func deleteDomain(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		d.SetId("")
 	}
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleDomainIDString(d))
 
 	return err
 }

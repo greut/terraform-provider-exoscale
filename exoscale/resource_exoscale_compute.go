@@ -16,6 +16,10 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceExoscaleComputeIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_compute")
+}
+
 func computeResource() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"zone": {
@@ -183,6 +187,8 @@ func computeResource() *schema.Resource {
 }
 
 func createCompute(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleComputeIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -373,6 +379,8 @@ func createCompute(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleComputeIDString(d))
+
 	return readCompute(d, meta)
 }
 
@@ -400,6 +408,8 @@ func existsCompute(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readCompute(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleComputeIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -492,10 +502,14 @@ func readCompute(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleComputeIDString(d))
+
 	return applyCompute(d, machine)
 }
 
 func updateCompute(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleComputeIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
@@ -818,10 +832,14 @@ func updateCompute(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleComputeIDString(d))
+
 	return err
 }
 
 func deleteCompute(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleComputeIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -841,6 +859,8 @@ func deleteCompute(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleComputeIDString(d))
 
 	return nil
 }

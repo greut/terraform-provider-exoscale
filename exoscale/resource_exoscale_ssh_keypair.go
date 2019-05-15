@@ -2,10 +2,15 @@ package exoscale
 
 import (
 	"context"
+	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleSSHKeypairIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_ssh_keypair")
+}
 
 func sshResource() *schema.Resource {
 	return &schema.Resource{
@@ -49,6 +54,8 @@ func sshResource() *schema.Resource {
 }
 
 func createSSH(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleSSHKeypairIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -66,6 +73,9 @@ func createSSH(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		keypair := resp.(*egoscale.SSHKeyPair)
+
+		log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSSHKeypairIDString(d))
+
 		return applySSH(d, keypair)
 	}
 
@@ -77,6 +87,9 @@ func createSSH(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	keypair := resp.(*egoscale.SSHKeyPair)
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSSHKeypairIDString(d))
+
 	return applySSH(d, keypair)
 }
 
@@ -100,6 +113,8 @@ func existsSSH(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readSSH(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleSSHKeypairIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -114,10 +129,14 @@ func readSSH(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSSHKeypairIDString(d))
+
 	return applySSH(d, resp.(*egoscale.SSHKeyPair))
 }
 
 func deleteSSH(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleSSHKeypairIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -131,6 +150,9 @@ func deleteSSH(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleSSHKeypairIDString(d))
+
 	return nil
 }
 

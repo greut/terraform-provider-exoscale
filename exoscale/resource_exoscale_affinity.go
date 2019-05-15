@@ -2,10 +2,15 @@ package exoscale
 
 import (
 	"context"
+	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleAffinityIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_affinity")
+}
 
 func affinityGroupResource() *schema.Resource {
 	return &schema.Resource{
@@ -54,6 +59,8 @@ func affinityGroupResource() *schema.Resource {
 }
 
 func createAffinityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleAffinityIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -72,6 +79,8 @@ func createAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 
 	ag := resp.(*egoscale.AffinityGroup)
 	d.SetId(ag.ID.String())
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleAffinityIDString(d))
 
 	return readAffinityGroup(d, meta)
 }
@@ -100,6 +109,8 @@ func existsAffinityGroup(d *schema.ResourceData, meta interface{}) (bool, error)
 }
 
 func readAffinityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleAffinityIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -118,6 +129,8 @@ func readAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return handleNotFound(d, err)
 	}
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleAffinityIDString(d))
 
 	return applyAffinityGroup(d, resp.(*egoscale.AffinityGroup))
 }
@@ -144,6 +157,8 @@ func applyAffinityGroup(d *schema.ResourceData, affinity *egoscale.AffinityGroup
 }
 
 func deleteAffinityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleAffinityIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -154,7 +169,11 @@ func deleteAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return client.DeleteWithContext(ctx, &egoscale.AffinityGroup{
-		ID: id,
-	})
+	if err := client.DeleteWithContext(ctx, &egoscale.AffinityGroup{ID: id}); err != nil {
+		return err
+	}
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleAffinityIDString(d))
+
+	return nil
 }

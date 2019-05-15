@@ -3,6 +3,7 @@ package exoscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -13,6 +14,10 @@ import (
 // supportedProtocols contains the allowed protocols
 var supportedProtocols = []string{
 	"TCP", "UDP", "ICMP", "ICMPv6", "AH", "ESP", "GRE", "IPIP", "ALL",
+}
+
+func resourceExoscaleSecurityGroupRuleIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_security_group_rule")
 }
 
 func securityGroupRuleResource() *schema.Resource {
@@ -118,6 +123,8 @@ func securityGroupRuleResource() *schema.Resource {
 }
 
 func createSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleSecurityGroupRuleIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -216,6 +223,8 @@ func createSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("no security group rules were created, aborting")
 	}
 
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSecurityGroupRuleIDString(d))
+
 	return applySecurityGroupRule(d, securityGroup, (egoscale.EgressRule)(sg.IngressRule[0]))
 }
 
@@ -281,6 +290,8 @@ func existsSecurityGroupRule(d *schema.ResourceData, meta interface{}) (bool, er
 }
 
 func readSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleSecurityGroupRuleIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -343,11 +354,16 @@ func readSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
 		return applySecurityGroupRule(d, sg, (egoscale.EgressRule)(ingressRule))
 	}
 
-	d.SetId("")
+	d.SetId("") // FIXME: wat
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSecurityGroupRuleIDString(d))
+
 	return nil
 }
 
 func deleteSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleSecurityGroupRuleIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -369,7 +385,13 @@ func deleteSecurityGroupRule(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return client.BooleanRequestWithContext(ctx, req)
+	if err := client.BooleanRequestWithContext(ctx, req); err != nil {
+		return err
+	}
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleSecurityGroupRuleIDString(d))
+
+	return nil
 }
 
 func applySecurityGroupRule(d *schema.ResourceData, group *egoscale.SecurityGroup, rule egoscale.EgressRule) error {

@@ -12,6 +12,10 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceExoscaleIPAddressIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_ipaddress")
+}
+
 func elasticIPResource() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"zone": {
@@ -93,6 +97,8 @@ func elasticIPResource() *schema.Resource {
 }
 
 func createElasticIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleIPAddressIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -185,6 +191,8 @@ func createElasticIP(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleIPAddressIDString(d))
+
 	return readElasticIP(d, meta)
 }
 
@@ -213,6 +221,8 @@ func existsElasticIP(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readElasticIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleIPAddressIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -238,10 +248,14 @@ func readElasticIP(d *schema.ResourceData, meta interface{}) error {
 		return handleNotFound(d, err)
 	}
 
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleIPAddressIDString(d))
+
 	return applyElasticIP(d, resp.(*egoscale.IPAddress))
 }
 
 func updateElasticIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleIPAddressIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
@@ -344,10 +358,14 @@ func updateElasticIP(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleIPAddressIDString(d))
+
 	return err
 }
 
 func deleteElasticIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleIPAddressIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -358,9 +376,13 @@ func deleteElasticIP(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return client.DeleteWithContext(ctx, &egoscale.IPAddress{
-		ID: id,
-	})
+	if err := client.DeleteWithContext(ctx, &egoscale.IPAddress{ID: id}); err != nil {
+		return err
+	}
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleIPAddressIDString(d))
+
+	return nil
 }
 
 func applyElasticIP(d *schema.ResourceData, ip *egoscale.IPAddress) error {

@@ -13,6 +13,10 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+func resourceExoscaleSecurityGroupRulesIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_security_group_rules")
+}
+
 func securityGroupRulesResource() *schema.Resource {
 	ruleSchema := &schema.Schema{
 		Type:     schema.TypeSet,
@@ -107,7 +111,10 @@ func securityGroupRulesResource() *schema.Resource {
 	}
 }
 
+// TODO: move this function after {create,read}SecurityGroupRules()
 func updateSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -221,10 +228,14 @@ func updateSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	return readSecurityGroupRules(d, meta)
 }
 
 func createSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -311,10 +322,14 @@ func createSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	return readSecurityGroupRules(d, meta)
 }
 
 func readSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -369,6 +384,8 @@ func readSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 	}
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSecurityGroupRulesIDString(d))
 
 	return nil
 }
@@ -455,6 +472,8 @@ func readRules(rules *schema.Set, ruleFunc fetchRuleFunc) {
 }
 
 func deleteSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -498,6 +517,9 @@ func deleteSecurityGroupRules(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleSecurityGroupRulesIDString(d))
+
 	return nil
 }
 

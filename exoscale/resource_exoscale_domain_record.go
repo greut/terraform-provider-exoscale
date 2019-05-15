@@ -3,12 +3,17 @@ package exoscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 )
+
+func resourceExoscaleDomainRecordIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_domain_record")
+}
 
 func domainRecordResource() *schema.Resource {
 	return &schema.Resource{
@@ -69,6 +74,8 @@ func domainRecordResource() *schema.Resource {
 }
 
 func createRecord(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleDomainRecordIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -87,6 +94,9 @@ func createRecord(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(strconv.FormatInt(record.ID, 10))
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleDomainRecordIDString(d))
+
 	return readRecord(d, meta)
 }
 
@@ -136,6 +146,8 @@ func existsRecord(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readRecord(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleDomainRecordIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -144,11 +156,14 @@ func readRecord(d *schema.ResourceData, meta interface{}) error {
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	domain := d.Get("domain").(string)
 
+	// TODO: when is it not the case? Isn't the `domain` attribute supposed to be mandatory?
 	if domain != "" {
 		record, err := client.GetRecord(ctx, domain, id)
 		if err != nil {
 			return err
 		}
+
+		log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleDomainRecordIDString(d))
 
 		return applyRecord(d, *record)
 	}
@@ -168,6 +183,9 @@ func readRecord(d *schema.ResourceData, meta interface{}) error {
 			if err := d.Set("domain", domain.Name); err != nil {
 				return err
 			}
+
+			log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleDomainRecordIDString(d))
+
 			return applyRecord(d, *record)
 		}
 	}
@@ -176,6 +194,8 @@ func readRecord(d *schema.ResourceData, meta interface{}) error {
 }
 
 func updateRecord(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleDomainRecordIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
@@ -195,10 +215,14 @@ func updateRecord(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleDomainRecordIDString(d))
+
 	return applyRecord(d, *record)
 }
 
 func deleteRecord(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleDomainRecordIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -206,9 +230,11 @@ func deleteRecord(d *schema.ResourceData, meta interface{}) error {
 
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	err := client.DeleteRecord(ctx, d.Get("domain").(string), id)
-	if err != nil {
+	if err != nil { // FIXME: isn't it supposed to be the opposite? (if err == nil)
 		d.SetId("")
 	}
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleDomainRecordIDString(d))
 
 	return err
 }

@@ -3,11 +3,16 @@ package exoscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleNicIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_nic")
+}
 
 func nicResource() *schema.Resource {
 	return &schema.Resource{
@@ -58,6 +63,8 @@ func nicResource() *schema.Resource {
 }
 
 func createNic(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleNicIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -95,10 +102,15 @@ func createNic(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(nic.ID.String())
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleNicIDString(d))
+
 	return readNic(d, meta)
 }
 
 func readNic(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleNicIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -117,6 +129,9 @@ func readNic(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	n := resp.(*egoscale.Nic)
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleNicIDString(d))
+
 	return applyNic(d, *n)
 }
 
@@ -143,6 +158,8 @@ func existsNic(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func updateNic(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning update", resourceExoscaleNicIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutUpdate))
 	defer cancel()
 
@@ -178,10 +195,14 @@ func updateNic(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
+	log.Printf("[DEBUG] %s: update finished successfully", resourceExoscaleNicIDString(d))
+
 	return err
 }
 
 func deleteNic(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleNicIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -218,6 +239,9 @@ func deleteNic(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleNicIDString(d))
+
 	return nil
 }
 

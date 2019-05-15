@@ -3,12 +3,17 @@ package exoscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleSecondaryIPAddressIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_secondary_ipaddress")
+}
 
 func secondaryIPResource() *schema.Resource {
 	return &schema.Resource{
@@ -53,6 +58,8 @@ func secondaryIPResource() *schema.Resource {
 }
 
 func createSecondaryIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleSecondaryIPAddressIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -103,6 +110,8 @@ func createSecondaryIP(d *schema.ResourceData, meta interface{}) error {
 			return err
 		}
 
+		log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSecondaryIPAddressIDString(d))
+
 		return readSecondaryIP(d, meta)
 	}
 
@@ -120,6 +129,8 @@ func existsSecondaryIP(d *schema.ResourceData, meta interface{}) (bool, error) {
 }
 
 func readSecondaryIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleSecondaryIPAddressIDString(d))
+
 	ip, err := getSecondaryIP(d, meta)
 	if err != nil {
 		return handleNotFound(d, err)
@@ -133,6 +144,9 @@ func readSecondaryIP(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		d.SetId("")
 	}
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSecondaryIPAddressIDString(d))
+
 	return nil
 }
 
@@ -265,6 +279,8 @@ func getSecondaryIP(d *schema.ResourceData, meta interface{}) (*egoscale.NicSeco
 }
 
 func deleteSecondaryIP(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleSecondaryIPAddressIDString(d))
+
 	ip, err := getSecondaryIP(d, meta)
 	if err != nil {
 		return err
@@ -280,9 +296,13 @@ func deleteSecondaryIP(d *schema.ResourceData, meta interface{}) error {
 
 	client := GetComputeClient(meta)
 
-	return client.BooleanRequestWithContext(ctx, &egoscale.RemoveIPFromNic{
-		ID: ip.ID,
-	})
+	if err := client.BooleanRequestWithContext(ctx, &egoscale.RemoveIPFromNic{ID: ip.ID}); err != nil {
+		return err
+	}
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSecondaryIPAddressIDString(d))
+
+	return nil
 }
 
 func applySecondaryIP(d *schema.ResourceData, secondaryIP *egoscale.NicSecondaryIP) error {

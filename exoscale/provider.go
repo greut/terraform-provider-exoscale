@@ -285,3 +285,16 @@ func handleNotFound(d *schema.ResourceData, err error) error {
 	}
 	return err
 }
+
+type resourceIDStringer interface {
+	Id() string
+}
+
+func resourceIDString(d resourceIDStringer, name string) string {
+	id := d.Id()
+	if id == "" {
+		id = "<new resource>"
+	}
+
+	return fmt.Sprintf("%s (ID = %s)", name, id)
+}

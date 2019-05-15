@@ -2,10 +2,15 @@ package exoscale
 
 import (
 	"context"
+	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+func resourceExoscaleSecurityGroupIDString(d resourceIDStringer) string {
+	return resourceIDString(d, "exoscale_security_group")
+}
 
 func securityGroupResource() *schema.Resource {
 	return &schema.Resource{
@@ -47,6 +52,8 @@ func securityGroupResource() *schema.Resource {
 }
 
 func createSecurityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning create", resourceExoscaleSecurityGroupIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutCreate))
 	defer cancel()
 
@@ -63,6 +70,9 @@ func createSecurityGroup(d *schema.ResourceData, meta interface{}) error {
 	sg := resp.(*egoscale.SecurityGroup)
 
 	d.SetId(sg.ID.String())
+
+	log.Printf("[DEBUG] %s: create finished successfully", resourceExoscaleSecurityGroupIDString(d))
+
 	return readSecurityGroup(d, meta)
 }
 
@@ -91,6 +101,8 @@ func existsSecurityGroup(d *schema.ResourceData, meta interface{}) (bool, error)
 }
 
 func readSecurityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning read", resourceExoscaleSecurityGroupIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
@@ -109,14 +121,20 @@ func readSecurityGroup(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	sg := resp.(*egoscale.SecurityGroup)
+
+	log.Printf("[DEBUG] %s: read finished successfully", resourceExoscaleSecurityGroupIDString(d))
+
 	return applySecurityGroup(d, sg)
 }
 
+// FIXME: what's the point of implementing this func if it doesn't update anything? All resource attributes have the `ForceNew` flag...
 func updateSecurityGroup(d *schema.ResourceData, meta interface{}) error {
 	return readSecurityGroup(d, meta)
 }
 
 func deleteSecurityGroup(d *schema.ResourceData, meta interface{}) error {
+	log.Printf("[DEBUG] %s: beginning delete", resourceExoscaleSecurityGroupIDString(d))
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.Timeout(schema.TimeoutDelete))
 	defer cancel()
 
@@ -130,6 +148,9 @@ func deleteSecurityGroup(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId("")
+
+	log.Printf("[DEBUG] %s: delete finished successfully", resourceExoscaleSecurityGroupIDString(d))
+
 	return nil
 }
 
