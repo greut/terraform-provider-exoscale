@@ -9,7 +9,9 @@ description: |-
 # exoscale_security_group_rules
 
 A security group rules represents a set of `ingress` and/or `egress` rules
-which has to be linked to a `exoscale_security_group`.
+which has to be linked to a `exoscale_security_group` resource. Note: any
+other rule created outside of Terraform for this security group won't be
+managed.
 
 ## Example usage
 
@@ -24,6 +26,18 @@ resource "exoscale_security_group_rules" "http" {
     user_security_group_list = ["default", "etcd"]
   }
 
+  ingress {
+    protocol = "ICMP"
+    cidr_list = ["0.0.0.0/0"]
+    icmp_type = 8
+  }
+
+  ingress {
+    protocol = "ICMPv6"
+    cidr_list = ["::/0"]
+    icmp_type = 128
+  }
+
   egress {
     // ...
   }
@@ -31,10 +45,9 @@ resource "exoscale_security_group_rules" "http" {
 ```
 
 ## Argument Reference
+- `security_group` - (Required) Security Group name to add rules to
 
-- `security_group_id` - (Required) which security group by name the rule applies to
-
-- `security_group` - (Required) which security group by id the rule applies to
+- `security_group_id` - (Required) Security Group ID to add rules to
 
 - `egress` or `ingress` - set of rules for the incoming or outgoing traffic
 
