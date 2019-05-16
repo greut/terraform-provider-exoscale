@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccNic(t *testing.T) {
+func TestAccNIC(t *testing.T) {
 	vm := new(egoscale.VirtualMachine)
 	nw := new(egoscale.Network)
 	nic := new(egoscale.Nic)
@@ -18,32 +18,32 @@ func TestAccNic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNicDestroy,
+		CheckDestroy: testAccCheckNICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccNicCreate,
+				Config: testAccNICCreate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckNetworkExists("exoscale_network.net", nw),
-					testAccCheckNicExists("exoscale_nic.nic", vm, nic),
-					testAccCheckNicAttributes(nic, net.ParseIP("10.0.0.1")),
-					testAccCheckNicCreateAttributes(),
+					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
+					testAccCheckNICAttributes(nic, net.ParseIP("10.0.0.1")),
+					testAccCheckNICCreateAttributes(),
 				),
 			}, {
-				Config: testAccNicUpdate,
+				Config: testAccNICUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckNetworkExists("exoscale_network.net", nw),
-					testAccCheckNicExists("exoscale_nic.nic", vm, nic),
-					testAccCheckNicAttributes(nic, net.ParseIP("10.0.0.3")),
-					testAccCheckNicCreateAttributes(),
+					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
+					testAccCheckNICAttributes(nic, net.ParseIP("10.0.0.3")),
+					testAccCheckNICCreateAttributes(),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckNicExists(n string, vm *egoscale.VirtualMachine, nic *egoscale.Nic) resource.TestCheckFunc {
+func testAccCheckNICExists(n string, vm *egoscale.VirtualMachine, nic *egoscale.Nic) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -51,7 +51,7 @@ func testAccCheckNicExists(n string, vm *egoscale.VirtualMachine, nic *egoscale.
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("no nic ID is set")
+			return fmt.Errorf("no NIC ID is set")
 		}
 
 		id, err := egoscale.ParseUUID(rs.Primary.ID)
@@ -71,21 +71,21 @@ func testAccCheckNicExists(n string, vm *egoscale.VirtualMachine, nic *egoscale.
 	}
 }
 
-func testAccCheckNicAttributes(nic *egoscale.Nic, ipAddress net.IP) resource.TestCheckFunc {
+func testAccCheckNICAttributes(nic *egoscale.Nic, ipAddress net.IP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if nic.MACAddress == nil {
-			return fmt.Errorf("nic is nil")
+			return fmt.Errorf("NIC is nil")
 		}
 
 		if !nic.IPAddress.Equal(ipAddress) {
-			return fmt.Errorf("nic has bad IP address, got %s, want %s", nic.IPAddress, ipAddress)
+			return fmt.Errorf("NIC has bad IP address, got %s, want %s", nic.IPAddress, ipAddress)
 		}
 
 		return nil
 	}
 }
 
-func testAccCheckNicCreateAttributes() resource.TestCheckFunc {
+func testAccCheckNICCreateAttributes() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_nic" {
@@ -93,17 +93,17 @@ func testAccCheckNicCreateAttributes() resource.TestCheckFunc {
 			}
 			_, err := net.ParseMAC(rs.Primary.Attributes["mac_address"])
 			if err != nil {
-				return fmt.Errorf("Bad MAC %s", err)
+				return fmt.Errorf("Bad MAC address %s", err)
 			}
 
 			return nil
 		}
 
-		return fmt.Errorf("could not find nic mac address")
+		return fmt.Errorf("could not find NIC MAC address")
 	}
 }
 
-func testAccCheckNicDestroy(s *terraform.State) error {
+func testAccCheckNICDestroy(s *terraform.State) error {
 	client := GetComputeClient(testAccProvider.Meta())
 
 	for _, rs := range s.RootModule().Resources {
@@ -127,10 +127,10 @@ func testAccCheckNicDestroy(s *terraform.State) error {
 			return err
 		}
 	}
-	return fmt.Errorf("nic still exists")
+	return fmt.Errorf("NIC still exists")
 }
 
-var testAccNicCreate = fmt.Sprintf(`
+var testAccNICCreate = fmt.Sprintf(`
 resource "exoscale_ssh_keypair" "key" {
   name = "terraform-test-keypair"
 }
@@ -173,7 +173,7 @@ resource "exoscale_nic" "nic" {
 	defaultExoscaleNetworkOffering,
 )
 
-var testAccNicUpdate = fmt.Sprintf(`
+var testAccNICUpdate = fmt.Sprintf(`
 resource "exoscale_ssh_keypair" "key" {
   name = "terraform-test-keypair"
 }
