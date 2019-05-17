@@ -26,8 +26,8 @@ func TestAccNIC(t *testing.T) {
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckNetworkExists("exoscale_network.net", nw),
 					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
-					testAccCheckNICAttributes(nic, net.ParseIP("10.0.0.1")),
-					testAccCheckNICCreateAttributes(),
+					testAccCheckNIC(nic, net.ParseIP("10.0.0.1")),
+					testAccCheckNICAttributes(map[string]string{"ip_address": "10.0.0.1"}),
 				),
 			}, {
 				Config: testAccNICUpdate,
@@ -35,8 +35,8 @@ func TestAccNIC(t *testing.T) {
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckNetworkExists("exoscale_network.net", nw),
 					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
-					testAccCheckNICAttributes(nic, net.ParseIP("10.0.0.3")),
-					testAccCheckNICCreateAttributes(),
+					testAccCheckNIC(nic, net.ParseIP("10.0.0.3")),
+					testAccCheckNICAttributes(map[string]string{"ip_address": "10.0.0.3"}),
 				),
 			},
 		},
@@ -71,7 +71,7 @@ func testAccCheckNICExists(n string, vm *egoscale.VirtualMachine, nic *egoscale.
 	}
 }
 
-func testAccCheckNICAttributes(nic *egoscale.Nic, ipAddress net.IP) resource.TestCheckFunc {
+func testAccCheckNIC(nic *egoscale.Nic, ipAddress net.IP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if nic.MACAddress == nil {
 			return fmt.Errorf("NIC is nil")
@@ -85,7 +85,7 @@ func testAccCheckNICAttributes(nic *egoscale.Nic, ipAddress net.IP) resource.Tes
 	}
 }
 
-func testAccCheckNICCreateAttributes() resource.TestCheckFunc {
+func testAccCheckNICAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_nic" {
@@ -96,7 +96,7 @@ func testAccCheckNICCreateAttributes() resource.TestCheckFunc {
 				return fmt.Errorf("Bad MAC address %s", err)
 			}
 
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return fmt.Errorf("could not find NIC MAC address")
