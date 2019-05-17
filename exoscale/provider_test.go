@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -34,6 +35,23 @@ func testAccPreCheck(t *testing.T) {
 	if key == "" || secret == "" {
 		t.Fatal("EXOSCALE_API_KEY and EXOSCALE_API_SECRET must be set for acceptance tests")
 	}
+}
+
+// testResourceAttributes compares a map of expected resource attributes
+// against a map of actual resource attributes.
+func testResourceAttributes(want, got map[string]string) error {
+	for wk, wv := range want {
+		if v, ok := got[wk]; !ok {
+			return fmt.Errorf("expected attribute %q not found in map", wk)
+		} else if v != wv {
+			return fmt.Errorf("invalid value for attribute %q (expected %q, got %q)",
+				wk,
+				wv,
+				v)
+		}
+	}
+
+	return nil
 }
 
 var defaultExoscaleZone = "ch-gva-2"

@@ -11,6 +11,12 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
+var supportedRecordTypes = []string{
+	"A", "AAAA", "ALIAS", "CAA", "CNAME",
+	"HINFO", "MX", "NAPTR", "NS", "POOL",
+	"SPF", "SRV", "SSHFP", "TXT", "URL",
+}
+
 func resourceExoscaleDomainRecordIDString(d resourceIDStringer) string {
 	return resourceIDString(d, "exoscale_domain_record")
 }
@@ -31,18 +37,17 @@ func domainRecordResource() *schema.Resource {
 			"domain": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
+			},
+			"record_type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(supportedRecordTypes, true),
 			},
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
-			},
-			"record_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"A", "AAAA", "ALIAS", "CAA", "CNAME", "HINFO", "MX", "NAPTR",
-					"NS", "POOL", "SPF", "SRV", "SSHFP", "TXT", "URL",
-				}, true),
 			},
 			"content": {
 				Type:     schema.TypeString,
@@ -203,12 +208,11 @@ func updateRecord(d *schema.ResourceData, meta interface{}) error {
 
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	record, err := client.UpdateRecord(ctx, d.Get("domain").(string), egoscale.UpdateDNSRecord{
-		ID:         id,
-		Name:       d.Get("name").(string),
-		Content:    d.Get("content").(string),
-		RecordType: d.Get("record_type").(string),
-		TTL:        d.Get("ttl").(int),
-		Prio:       d.Get("prio").(int),
+		ID:      id,
+		Name:    d.Get("name").(string),
+		Content: d.Get("content").(string),
+		TTL:     d.Get("ttl").(int),
+		Prio:    d.Get("prio").(int),
 	})
 
 	if err != nil {
