@@ -33,7 +33,7 @@ func networkResource() *schema.Resource {
 			Type:     schema.TypeString,
 			Required: true,
 		},
-		"display_text": {
+		"display_text": { // TODO: rename to "description"
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
