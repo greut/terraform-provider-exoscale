@@ -99,7 +99,7 @@ func testAccCheckNetworkAttributes(expected map[string]string) resource.TestChec
 			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find Network name: %s", name)
+		return errors.New("Could not find Network")
 	}
 }
 
