@@ -11,9 +11,6 @@ description: |-
 The `exoscale_network` resource manages a [Private Network][privnet], a
 virtual L2 network segment shared only among Compute instances attached to it.
 
-Note: the *managed* Private Network feature is currently only available in the
-`CH-GVA-2` zone.
-
 [privnet]: https://community.exoscale.com/documentation/compute/private-networks/
 
 ## Usage
