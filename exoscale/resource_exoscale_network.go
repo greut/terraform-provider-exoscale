@@ -2,6 +2,7 @@ package exoscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -108,7 +109,9 @@ func createNetwork(d *schema.ResourceData, meta interface{}) error {
 	startIP := net.ParseIP(d.Get("start_ip").(string))
 	endIP := net.ParseIP(d.Get("end_ip").(string))
 	netmask := net.ParseIP(d.Get("netmask").(string))
-	if startIP == nil && endIP == nil {
+	if (startIP == nil && endIP != nil) || (startIP != nil && endIP == nil) {
+		return errors.New("start_ip and end_ip must be both specified")
+	} else if startIP == nil && endIP == nil {
 		netmask = nil
 	} else if netmask == nil {
 		netmask = net.ParseIP(defaultNetmask)
