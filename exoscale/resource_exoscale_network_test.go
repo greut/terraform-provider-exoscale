@@ -51,7 +51,7 @@ func testAccCheckNetworkExists(name string, network *egoscale.Network) resource.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("Not found: %s", name)
 		}
 
 		if rs.Primary.ID == "" {
