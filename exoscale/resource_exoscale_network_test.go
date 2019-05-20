@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"testing"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestAccNetwork(t *testing.T) {
-	net := new(egoscale.Network)
+	network := new(egoscale.Network)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -21,25 +22,34 @@ func TestAccNetwork(t *testing.T) {
 			{
 				Config: testAccNetworkCreate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkExists("exoscale_network.net", net),
-					testAccCheckNetworkAttributes(net),
-					testAccCheckNetworkCreateAttributes("terraform-test-network"),
+					testAccCheckNetworkExists("exoscale_network.net", network),
+					testAccCheckNetwork(network, nil),
+					testAccCheckNetworkAttributes(map[string]string{
+						"name":         "terraform-test-network1",
+						"display_text": "Terraform Acceptance Test (create)",
+					}),
 				),
 			}, {
 				Config: testAccNetworkUpdate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNetworkExists("exoscale_network.net", net),
-					testAccCheckManagedNetworkAttributes(net),
-					testAccCheckNetworkCreateAttributes("terraform-test-network"),
+					testAccCheckNetworkExists("exoscale_network.net", network),
+					testAccCheckNetwork(network, net.ParseIP("10.0.0.1")),
+					testAccCheckNetworkAttributes(map[string]string{
+						"name":         "terraform-test-network2",
+						"display_text": "Terraform Acceptance Test (update)",
+						"start_ip":     "10.0.0.1",
+						"end_ip":       "10.0.0.5",
+						"netmask":      "255.255.255.248",
+					}),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckNetworkExists(n string, net *egoscale.Network) resource.TestCheckFunc {
+func testAccCheckNetworkExists(name string, network *egoscale.Network) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
@@ -54,60 +64,39 @@ func testAccCheckNetworkExists(n string, net *egoscale.Network) resource.TestChe
 		}
 
 		client := GetComputeClient(testAccProvider.Meta())
-		net.ID = id
-		resp, err := client.Get(net)
+		network.ID = id
+		network.Name = "" // Reset network name to avoid side-effects from previous test steps
+		resp, err := client.Get(network)
 		if err != nil {
 			return err
 		}
 
-		return Copy(net, resp.(*egoscale.Network))
+		return Copy(network, resp.(*egoscale.Network))
 	}
 }
 
-func testAccCheckNetworkAttributes(net *egoscale.Network) resource.TestCheckFunc {
+func testAccCheckNetwork(network *egoscale.Network, expectedStartIP net.IP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if net.ID == nil {
+		if network.ID == nil {
 			return fmt.Errorf("Network is nil")
 		}
 
-		if net.StartIP != nil {
-			return fmt.Errorf("StartIP is not nil, got %s", net.StartIP)
+		if !network.StartIP.Equal(expectedStartIP) {
+			return fmt.Errorf("expected StartIP to be %v, got %v", expectedStartIP, network.StartIP)
 		}
 
 		return nil
 	}
 }
 
-func testAccCheckManagedNetworkAttributes(nw *egoscale.Network) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		if nw.ID == nil {
-			return fmt.Errorf("Network is nil")
-		}
-
-		if !nw.StartIP.Equal(net.ParseIP("10.0.0.1")) {
-			return fmt.Errorf("StartIP doesn't match, got %s", nw.StartIP)
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckNetworkCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckNetworkAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_network" {
 				continue
 			}
 
-			if rs.Primary.Attributes["name"] != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["display_text"] == "" {
-				return fmt.Errorf("Network: expected display text to be set")
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return fmt.Errorf("Could not find Network name: %s", name)
@@ -138,15 +127,15 @@ func testAccCheckNetworkDestroy(s *terraform.State) error {
 			return err
 		}
 	}
-	return fmt.Errorf("Network: still exists")
+	return errors.New("Network: still exists")
 }
 
 var testAccNetworkCreate = fmt.Sprintf(`
 resource "exoscale_network" "net" {
-  name = "terraform-test-network"
-  display_text = "Terraform Acceptance Test"
   zone = %q
   network_offering = %q
+  name = "terraform-test-network1"
+  display_text = "Terraform Acceptance Test (create)"
 
   tags = {
     managedby = "terraform"
@@ -159,10 +148,10 @@ resource "exoscale_network" "net" {
 
 var testAccNetworkUpdate = fmt.Sprintf(`
 resource "exoscale_network" "net" {
-  name = "terraform-test-network"
-  display_text = "Terraform Acceptance Test"
   zone = %q
   network_offering = %q
+  name = "terraform-test-network2"
+  display_text = "Terraform Acceptance Test (update)"
 
   start_ip = "10.0.0.1"
   end_ip = "10.0.0.5"
