@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -20,15 +21,37 @@ func TestAccSecurityGroupRule(t *testing.T) {
 		CheckDestroy: testAccCheckSecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccSecurityGroupRuleCreate,
+				Config: testAccSecurityGroupRule1,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
 					testAccCheckEgressRuleExists("exoscale_security_group_rule.cidr", sg, cidr),
+					testAccCheckSecurityGroupRule(cidr),
+					testAccCheckSecurityGroupRule((*egoscale.EgressRule)(usg)),
+					testAccCheckSecurityGroupRuleAttributes(map[string]string{
+						"security_group": "terraform-test-security-group",
+						"protocol":       "TCP",
+						"type":           "EGRESS",
+						"cidr":           "::/0",
+						"start_port":     "2",
+						"end_port":       "1024",
+					}),
+				),
+			},
+			resource.TestStep{
+				Config: testAccSecurityGroupRule2,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
 					testAccCheckIngressRuleExists("exoscale_security_group_rule.usg", sg, usg),
-					testAccCheckSecurityGroupRuleAttributes(cidr),
-					testAccCheckSecurityGroupRuleAttributes((*egoscale.EgressRule)(usg)),
-					testAccCheckSecurityGroupRuleCreateAttributes("EGRESS", "TCP"),
-					testAccCheckSecurityGroupRuleCreateAttributes("INGRESS", "ICMPv6"),
+					testAccCheckSecurityGroupRule(usg),
+					testAccCheckSecurityGroupRule((*egoscale.EgressRule)(usg)),
+					testAccCheckSecurityGroupRuleAttributes(map[string]string{
+						"security_group":      "terraform-test-security-group",
+						"protocol":            "ICMPv6",
+						"type":                "INGRESS",
+						"icmp_type":           "128",
+						"icmp_code":           "0",
+						"user_security_group": "terraform-test-security-group",
+					}),
 				),
 			},
 		},
@@ -72,36 +95,32 @@ func testAccCheckIngressRuleExists(n string, sg *egoscale.SecurityGroup, rule *e
 		return Copy(rule, sg.IngressRule[0])
 	}
 }
-func testAccCheckSecurityGroupRuleAttributes(r *egoscale.EgressRule) resource.TestCheckFunc {
+
+func testAccCheckSecurityGroupRule(v interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if r.RuleID == nil {
-			return fmt.Errorf("security group rule id is nil")
+		switch v.(type) {
+		case egoscale.IngressRule, egoscale.EgressRule:
+			r, _ := v.(egoscale.IngressRule)
+			if r.RuleID == nil {
+				return fmt.Errorf("security group rule id is nil")
+			}
 		}
 
 		return nil
 	}
 }
 
-func testAccCheckSecurityGroupRuleCreateAttributes(typ, protocol string) resource.TestCheckFunc {
+func testAccCheckSecurityGroupRuleAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_security_group_rule" {
 				continue
 			}
 
-			if rs.Primary.Attributes["type"] != typ {
-				continue
-			}
-
-			p := rs.Primary.Attributes["protocol"]
-			if p != protocol {
-				return fmt.Errorf("Security Groups Rule: bad protocol wanted %s, got %s", protocol, p)
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find security group rule: %s", typ)
+		return errors.New("security_group_rule resource not found in the state")
 	}
 }
 
@@ -133,7 +152,7 @@ func testAccCheckSecurityGroupRuleDestroy(s *terraform.State) error {
 	return fmt.Errorf("security group rule still exists")
 }
 
-var testAccSecurityGroupRuleCreate = `
+var testAccSecurityGroupRule1 = `
 resource "exoscale_security_group" "sg" {
   name = "terraform-test-security-group"
   description = "Terraform Security Group Test"
@@ -146,6 +165,13 @@ resource "exoscale_security_group_rule" "cidr" {
   cidr = "::/0"
   start_port = 2
   end_port = 1024
+}
+`
+
+var testAccSecurityGroupRule2 = `
+resource "exoscale_security_group" "sg" {
+  name = "terraform-test-security-group"
+  description = "Terraform Security Group Test"
 }
 
 resource "exoscale_security_group_rule" "usg" {
