@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 )
 
 func TestAccCompute(t *testing.T) {
+	sg := new(egoscale.SecurityGroup)
 	vm := new(egoscale.VirtualMachine)
 
 	resource.Test(t, resource.TestCase{
@@ -21,16 +23,30 @@ func TestAccCompute(t *testing.T) {
 				Config: testAccComputeCreate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
-					testAccCheckComputeAttributes(vm),
-					testAccCheckComputeCreateAttributes("terraform-test-compute"),
+					testAccCheckCompute(vm),
+					testAccCheckComputeAttributes(map[string]string{
+						"display_name": "terraform-test-compute1",
+						"size":         "Micro",
+						"disk_size":    "12",
+						"key_pair":     "terraform-test-keypair",
+					}),
 				),
 			},
 			{
 				Config: testAccComputeUpdate,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
-					testAccCheckComputeAttributes(vm),
-					testAccCheckComputeCreateAttributes("acceptance-hello"),
+					testAccCheckCompute(vm),
+					testAccCheckComputeAttributes(map[string]string{
+						"display_name":      "terraform-test-compute2",
+						"size":              "Small",
+						"disk_size":         "18",
+						"key_pair":          "terraform-test-keypair",
+						"security_groups.#": "2",
+						"ip6":               "true",
+						"user_data":         "#cloud-config\npackage_upgrade: true\n",
+					}),
 				),
 			},
 		},
@@ -66,7 +82,7 @@ func testAccCheckComputeExists(n string, vm *egoscale.VirtualMachine) resource.T
 	}
 }
 
-func testAccCheckComputeAttributes(vm *egoscale.VirtualMachine) resource.TestCheckFunc {
+func testAccCheckCompute(vm *egoscale.VirtualMachine) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if vm.ID == nil {
 			return fmt.Errorf("compute is nil")
@@ -76,25 +92,17 @@ func testAccCheckComputeAttributes(vm *egoscale.VirtualMachine) resource.TestChe
 	}
 }
 
-func testAccCheckComputeCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckComputeAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_compute" {
 				continue
 			}
 
-			if rs.Primary.Attributes["display_name"] != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["key_pair"] != "terraform-test-keypair" {
-				return fmt.Errorf("Bad key name")
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find compute name: %s", name)
+		return errors.New("compute resource not found in the state")
 	}
 }
 
@@ -131,9 +139,9 @@ resource "exoscale_ssh_keypair" "key" {
 }
 
 resource "exoscale_compute" "vm" {
-  display_name = "terraform-test-compute"
   template = %q
   zone = %q
+  display_name = "terraform-test-compute1"
   size = "Micro"
   disk_size = "12"
   key_pair = "${exoscale_ssh_keypair.key.name}"
@@ -156,19 +164,33 @@ resource "exoscale_ssh_keypair" "key" {
   name = "terraform-test-keypair"
 }
 
+resource "exoscale_security_group" "sg" {
+  name = "terraform-test-security-group"
+}
+
 resource "exoscale_compute" "vm" {
-  display_name = "acceptance-hello"
   template = %q
   zone = %q
+  display_name = "terraform-test-compute2"
   size = "Small"
   disk_size = "18"
   key_pair = "${exoscale_ssh_keypair.key.name}"
+
+  user_data = <<EOF
+#cloud-config
+package_upgrade: true
+EOF
+
+  security_groups = ["default", "terraform-test-security-group"]
 
   ip6 = true
 
   timeouts {
     delete = "30m"
   }
+
+  # Ensure SG exists before we reference it
+  depends_on = ["exoscale_security_group.sg"]
 }
 `,
 	defaultExoscaleTemplate,
