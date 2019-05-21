@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -21,8 +22,12 @@ func TestAccSSHKeyPair(t *testing.T) {
 				Config: testAccSSHKeyPairCreate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSSHKeyPairExists("exoscale_ssh_keypair.key", sshkey),
-					testAccCheckSSHKeyPairAttributes(sshkey),
-					testAccCheckSSHKeyPairCreateAttributes("terraform-test-keypair"),
+					testAccCheckSSHKeyPair(sshkey),
+					testAccCheckSSHKeyPairAttributes(map[string]string{
+						"name":        "terraform-test-keypair",
+						"public_key":  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDN7L45b4vO2ytH68ZUC5PMS1b7JG78zGslwcJ0zolE5BuxsCYor248/FKGC5TXrME+yBu/uLqaAkioq4Wp1PzP6Zy5jEowWQDOdeER7uu1GgZShcvly2Oaf/UKLqTdwL+U3tCknqHY63fOAi1lBwmNTUu1uZ24iNiogfhXwQn7HJLQK9vfoGwg+/qJIzeswR6XDa6qh0fuzdxWQ4JWHw2s8fv8WvGOlklmAg/uEi1kF5D6R7kJpOVaE20FLnT4sjA81iErhMIH77OaZqQKiyVH3i5m/lkQI/2e25ml8aculaWzHOs4ctd7l+K1ZWFYje3qMBY1sar1gd787eaqk6RZ",
+						"fingerprint": "4d:31:21:c4:77:9f:19:91:6e:84:9d:7c:12:a8:11:1f",
+					}),
 				),
 			},
 		},
@@ -51,7 +56,7 @@ func testAccCheckSSHKeyPairExists(n string, sshkey *egoscale.SSHKeyPair) resourc
 	}
 }
 
-func testAccCheckSSHKeyPairAttributes(sshkey *egoscale.SSHKeyPair) resource.TestCheckFunc {
+func testAccCheckSSHKeyPair(sshkey *egoscale.SSHKeyPair) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(sshkey.Fingerprint) != 47 {
 			return fmt.Errorf("SSH Key: fingerprint length doesn't match")
@@ -61,25 +66,19 @@ func testAccCheckSSHKeyPairAttributes(sshkey *egoscale.SSHKeyPair) resource.Test
 	}
 }
 
-func testAccCheckSSHKeyPairCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckSSHKeyPairAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_ssh_keypair" {
 				continue
 			}
 
-			if rs.Primary.ID != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["private_key"] == "" {
-				return fmt.Errorf("SSH key: expected private key to be set")
-			}
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 
 			return nil
 		}
 
-		return fmt.Errorf("Could not find key pair %s", name)
+		return errors.New("ssh_keypair resource not found in the state")
 	}
 }
 
@@ -107,6 +106,7 @@ func testAccCheckSSHKeyPairDestroy(s *terraform.State) error {
 
 var testAccSSHKeyPairCreate = `
 resource "exoscale_ssh_keypair" "key" {
-  name = "terraform-test-keypair"
+  name       = "terraform-test-keypair"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDN7L45b4vO2ytH68ZUC5PMS1b7JG78zGslwcJ0zolE5BuxsCYor248/FKGC5TXrME+yBu/uLqaAkioq4Wp1PzP6Zy5jEowWQDOdeER7uu1GgZShcvly2Oaf/UKLqTdwL+U3tCknqHY63fOAi1lBwmNTUu1uZ24iNiogfhXwQn7HJLQK9vfoGwg+/qJIzeswR6XDa6qh0fuzdxWQ4JWHw2s8fv8WvGOlklmAg/uEi1kF5D6R7kJpOVaE20FLnT4sjA81iErhMIH77OaZqQKiyVH3i5m/lkQI/2e25ml8aculaWzHOs4ctd7l+K1ZWFYje3qMBY1sar1gd787eaqk6RZ"
 }
 `

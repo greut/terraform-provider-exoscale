@@ -23,7 +23,8 @@ resource "exoscale_ssh_keypair" "keylabel" {
 
 - `name` - (Required) Defines the label in Exoscale to identify the key
 
-- `public_key` - the SSH public key that will be copied into the instances at **first** boot. If not `public_key` is provided, a `public_key` is saved locally
+- `public_key` - the SSH public key that will be copied into the instances at **first** boot. If not provided,
+  a SSH keypair is generated and the `private_key` is saved locally.
 
 ## Attributes Reference
 
