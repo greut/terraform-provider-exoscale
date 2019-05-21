@@ -1,6 +1,7 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -21,16 +22,11 @@ func TestAccSecurityGroup(t *testing.T) {
 				Config: testAccSecurityGroupCreate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
-					testAccCheckSecurityGroupAttributes(sg),
-					testAccCheckSecurityGroupCreateAttributes("terraform-test-security-group"),
-				),
-			},
-			{
-				Config: testAccSecurityGroupUpdateTags,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
-					testAccCheckSecurityGroupAttributes(sg),
-					testAccCheckSecurityGroupCreateAttributes("terraform-test-security-group"),
+					testAccCheckSecurityGroup(sg),
+					testAccCheckSecurityGroupAttributes(map[string]string{
+						"name":        "terraform-test-security-group",
+						"description": "Terraform Security Group Test",
+					}),
 				),
 			},
 		},
@@ -65,7 +61,7 @@ func testAccCheckSecurityGroupExists(n string, sg *egoscale.SecurityGroup) resou
 	}
 }
 
-func testAccCheckSecurityGroupAttributes(sg *egoscale.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckSecurityGroup(sg *egoscale.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if sg.ID == nil {
 			return fmt.Errorf("security group is nil")
@@ -75,25 +71,17 @@ func testAccCheckSecurityGroupAttributes(sg *egoscale.SecurityGroup) resource.Te
 	}
 }
 
-func testAccCheckSecurityGroupCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckSecurityGroupAttributes(expected map[string]string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_security_group" {
 				continue
 			}
 
-			if rs.Primary.Attributes["name"] != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["description"] == "" {
-				return fmt.Errorf("Security Groups: expected description to be set")
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find security group name: %s", name)
+		return errors.New("security_group resource not found in the state")
 	}
 }
 
@@ -125,13 +113,6 @@ func testAccCheckSecurityGroupDestroy(s *terraform.State) error {
 }
 
 var testAccSecurityGroupCreate = `
-resource "exoscale_security_group" "sg" {
-  name = "terraform-test-security-group"
-  description = "Terraform Security Group Test"
-}
-`
-
-var testAccSecurityGroupUpdateTags = `
 resource "exoscale_security_group" "sg" {
   name = "terraform-test-security-group"
   description = "Terraform Security Group Test"
