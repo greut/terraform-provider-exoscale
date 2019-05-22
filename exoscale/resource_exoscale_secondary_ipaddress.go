@@ -15,7 +15,7 @@ func resourceExoscaleSecondaryIPAddressIDString(d resourceIDStringer) string {
 	return resourceIDString(d, "exoscale_secondary_ipaddress")
 }
 
-func secondaryIPResource() *schema.Resource {
+func secondaryIPResource() *schema.Resource { // TODO: s/IPResource/IPAddress/
 	return &schema.Resource{
 		Create: createSecondaryIP,
 		Exists: existsSecondaryIP,

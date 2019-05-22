@@ -7,6 +7,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -23,9 +24,8 @@ func TestAccSecurityGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
 					testAccCheckSecurityGroup(sg),
-					testAccCheckSecurityGroupAttributes(map[string]string{
-						"name":        "terraform-test-security-group",
-						"description": "Terraform Security Group Test",
+					testAccCheckSecurityGroupAttributes(map[string]schema.SchemaValidateFunc{
+						"description": ValidateString("Terraform Security Group Test"),
 					}),
 				),
 			},
@@ -71,7 +71,7 @@ func testAccCheckSecurityGroup(sg *egoscale.SecurityGroup) resource.TestCheckFun
 	}
 }
 
-func testAccCheckSecurityGroupAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckSecurityGroupAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_security_group" {

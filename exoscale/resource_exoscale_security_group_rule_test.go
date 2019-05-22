@@ -7,6 +7,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -27,13 +28,13 @@ func TestAccSecurityGroupRule(t *testing.T) {
 					testAccCheckEgressRuleExists("exoscale_security_group_rule.cidr", sg, cidr),
 					testAccCheckSecurityGroupRule(cidr),
 					testAccCheckSecurityGroupRule((*egoscale.EgressRule)(usg)),
-					testAccCheckSecurityGroupRuleAttributes(map[string]string{
-						"security_group": "terraform-test-security-group",
-						"protocol":       "TCP",
-						"type":           "EGRESS",
-						"cidr":           "::/0",
-						"start_port":     "2",
-						"end_port":       "1024",
+					testAccCheckSecurityGroupRuleAttributes(map[string]schema.SchemaValidateFunc{
+						"security_group": ValidateString("terraform-test-security-group"),
+						"protocol":       ValidateString("TCP"),
+						"type":           ValidateString("EGRESS"),
+						"cidr":           ValidateString("::/0"),
+						"start_port":     ValidateString("2"),
+						"end_port":       ValidateString("1024"),
 					}),
 				),
 			},
@@ -44,13 +45,13 @@ func TestAccSecurityGroupRule(t *testing.T) {
 					testAccCheckIngressRuleExists("exoscale_security_group_rule.usg", sg, usg),
 					testAccCheckSecurityGroupRule(usg),
 					testAccCheckSecurityGroupRule((*egoscale.EgressRule)(usg)),
-					testAccCheckSecurityGroupRuleAttributes(map[string]string{
-						"security_group":      "terraform-test-security-group",
-						"protocol":            "ICMPv6",
-						"type":                "INGRESS",
-						"icmp_type":           "128",
-						"icmp_code":           "0",
-						"user_security_group": "terraform-test-security-group",
+					testAccCheckSecurityGroupRuleAttributes(map[string]schema.SchemaValidateFunc{
+						"security_group":      ValidateString("terraform-test-security-group"),
+						"protocol":            ValidateString("ICMPv6"),
+						"type":                ValidateString("INGRESS"),
+						"icmp_type":           ValidateString("128"),
+						"icmp_code":           ValidateString("0"),
+						"user_security_group": ValidateString("terraform-test-security-group"),
 					}),
 				),
 			},
@@ -110,7 +111,7 @@ func testAccCheckSecurityGroupRule(v interface{}) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckSecurityGroupRuleAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckSecurityGroupRuleAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_security_group_rule" {

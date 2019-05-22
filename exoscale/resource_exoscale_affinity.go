@@ -135,6 +135,7 @@ func readAffinityGroup(d *schema.ResourceData, meta interface{}) error {
 	return applyAffinityGroup(d, resp.(*egoscale.AffinityGroup))
 }
 
+// TODO: move this function at the end
 func applyAffinityGroup(d *schema.ResourceData, affinity *egoscale.AffinityGroup) error {
 	if err := d.Set("name", affinity.Name); err != nil {
 		return err

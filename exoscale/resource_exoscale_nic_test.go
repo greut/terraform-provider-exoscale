@@ -1,12 +1,14 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -27,7 +29,10 @@ func TestAccNIC(t *testing.T) {
 					testAccCheckNetworkExists("exoscale_network.net", nw),
 					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
 					testAccCheckNIC(nic, net.ParseIP("10.0.0.1")),
-					testAccCheckNICAttributes(map[string]string{"ip_address": "10.0.0.1"}),
+					testAccCheckNICAttributes(map[string]schema.SchemaValidateFunc{
+						"mac_address": ValidateRegexp("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"),
+						"ip_address":  ValidateString("10.0.0.1"),
+					}),
 				),
 			}, {
 				Config: testAccNICUpdate,
@@ -36,7 +41,10 @@ func TestAccNIC(t *testing.T) {
 					testAccCheckNetworkExists("exoscale_network.net", nw),
 					testAccCheckNICExists("exoscale_nic.nic", vm, nic),
 					testAccCheckNIC(nic, net.ParseIP("10.0.0.3")),
-					testAccCheckNICAttributes(map[string]string{"ip_address": "10.0.0.3"}),
+					testAccCheckNICAttributes(map[string]schema.SchemaValidateFunc{
+						"mac_address": ValidateRegexp("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"),
+						"ip_address":  ValidateString("10.0.0.3"),
+					}),
 				),
 			},
 		},
@@ -85,21 +93,17 @@ func testAccCheckNIC(nic *egoscale.Nic, ipAddress net.IP) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckNICAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckNICAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_nic" {
 				continue
 			}
-			_, err := net.ParseMAC(rs.Primary.Attributes["mac_address"])
-			if err != nil {
-				return fmt.Errorf("Bad MAC address %s", err)
-			}
 
 			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("could not find NIC MAC address")
+		return errors.New("nic resource not found in the state")
 	}
 }
 

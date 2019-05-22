@@ -2,12 +2,18 @@ package exoscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+)
+
+const (
+	testDomain = "terraform-test.exo"
 )
 
 func TestAccDomain(t *testing.T) {
@@ -16,21 +22,27 @@ func TestAccDomain(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDNSDomainDestroy,
+		CheckDestroy: testAccCheckDomainDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccDNSDomainCreate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDNSDomainExists("exoscale_domain.exo", domain),
-					testAccCheckDNSDomainAttributes(domain),
-					testAccCheckDNSDomainCreateAttributes("acceptance.exo"),
+					testAccCheckDomainExists("exoscale_domain.exo", domain),
+					testAccCheckDomain(domain),
+					testAccCheckDomainAttributes(map[string]schema.SchemaValidateFunc{
+						"name":       ValidateString(testDomain),
+						"state":      ValidateString("hosted"),
+						"auto_renew": ValidateString("false"),
+						"expires_on": ValidateString(""),
+						"token":      ValidateRegexp("^[0-9a-f]+$"),
+					}),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckDNSDomainExists(n string, domain *egoscale.DNSDomain) resource.TestCheckFunc {
+func testAccCheckDomainExists(n string, domain *egoscale.DNSDomain) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -53,7 +65,7 @@ func testAccCheckDNSDomainExists(n string, domain *egoscale.DNSDomain) resource.
 	}
 }
 
-func testAccCheckDNSDomainAttributes(domain *egoscale.DNSDomain) resource.TestCheckFunc {
+func testAccCheckDomain(domain *egoscale.DNSDomain) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(domain.Token) != 32 {
 			return fmt.Errorf("DNS Domain: token length doesn't match")
@@ -63,29 +75,21 @@ func testAccCheckDNSDomainAttributes(domain *egoscale.DNSDomain) resource.TestCh
 	}
 }
 
-func testAccCheckDNSDomainCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckDomainAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_domain" {
 				continue
 			}
 
-			if rs.Primary.ID != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["token"] == "" {
-				return fmt.Errorf("DNS Domain: expected token to be set")
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find domain %s", name)
+		return errors.New("domain resource not found in the state")
 	}
 }
 
-func testAccCheckDNSDomainDestroy(s *terraform.State) error {
+func testAccCheckDomainDestroy(s *terraform.State) error {
 	client := GetDNSClient(testAccProvider.Meta())
 
 	for _, rs := range s.RootModule().Resources {
@@ -108,8 +112,9 @@ func testAccCheckDNSDomainDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDNSDomainCreate = `
+var testAccDNSDomainCreate = fmt.Sprintf(`
 resource "exoscale_domain" "exo" {
-  name = "acceptance.exo"
+  name = "%s"
 }
-`
+`,
+	testDomain)

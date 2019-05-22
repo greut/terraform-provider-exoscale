@@ -1,11 +1,13 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -21,8 +23,12 @@ func TestAccAffinityGroup(t *testing.T) {
 				Config: testAccAffinityGroupCreate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAffinityGroupExists("exoscale_affinity.ag", ag),
-					testAccCheckAffinityGroupAttributes(ag),
-					testAccCheckAffinityGroupCreateAttributes("terraform-test-affinity"),
+					testAccCheckAffinityGroup(ag),
+					testAccCheckAffinityGroupAttributes(map[string]schema.SchemaValidateFunc{
+						"name":        ValidateString("terraform-test-affinity"),
+						"description": ValidateString("Terraform Acceptance Test"),
+						"type":        ValidateString("host anti-affinity"),
+					}),
 				),
 			},
 		},
@@ -57,7 +63,7 @@ func testAccCheckAffinityGroupExists(n string, ag *egoscale.AffinityGroup) resou
 	}
 }
 
-func testAccCheckAffinityGroupAttributes(ag *egoscale.AffinityGroup) resource.TestCheckFunc {
+func testAccCheckAffinityGroup(ag *egoscale.AffinityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if ag.ID == nil {
 			return fmt.Errorf("affinity group is nil")
@@ -67,25 +73,17 @@ func testAccCheckAffinityGroupAttributes(ag *egoscale.AffinityGroup) resource.Te
 	}
 }
 
-func testAccCheckAffinityGroupCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckAffinityGroupAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_affinity" {
 				continue
 			}
 
-			if rs.Primary.Attributes["name"] != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["type"] == "" {
-				return fmt.Errorf("Affinity Groups: expected type to be set")
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find affinity group name: %s", name)
+		return errors.New("affinity resource not found in the state")
 	}
 }
 

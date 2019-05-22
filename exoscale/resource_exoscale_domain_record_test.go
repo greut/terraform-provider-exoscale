@@ -2,12 +2,14 @@ package exoscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -18,35 +20,35 @@ func TestAccDomainRecord(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDNSRecordDestroy,
+		CheckDestroy: testAccCheckDomainRecordDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDNSRecordCreate,
+				Config: testAccDomainRecordCreate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDNSDomainExists("exoscale_domain.exo", domain),
-					testAccCheckDNSRecordExists("exoscale_domain_record.mx", domain, record),
-					testAccCheckDNSRecord(record),
-					testAccCheckDNSRecordAttributes(map[string]string{
-						"name":        "mail1",
-						"record_type": "MX",
-						"content":     "mta1",
-						"prio":        "10",
-						"ttl":         "10",
+					testAccCheckDomainExists("exoscale_domain.exo", domain),
+					testAccCheckDomainRecordExists("exoscale_domain_record.mx", domain, record),
+					testAccCheckDomainRecord(record),
+					testAccCheckDomainRecordAttributes(map[string]schema.SchemaValidateFunc{
+						"name":        ValidateString("mail1"),
+						"record_type": ValidateString("MX"),
+						"content":     ValidateString("mta1"),
+						"prio":        ValidateString("10"),
+						"ttl":         ValidateString("10"),
 					}),
 				),
 			},
 			resource.TestStep{
-				Config: testAccDNSRecordUpdate,
+				Config: testAccDomainRecordUpdate,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDNSDomainExists("exoscale_domain.exo", domain),
-					testAccCheckDNSRecordExists("exoscale_domain_record.mx", domain, record),
-					testAccCheckDNSRecord(record),
-					testAccCheckDNSRecordAttributes(map[string]string{
-						"name":        "mail2",
-						"record_type": "MX",
-						"content":     "mta2",
-						"prio":        "20",
-						"ttl":         "20",
+					testAccCheckDomainExists("exoscale_domain.exo", domain),
+					testAccCheckDomainRecordExists("exoscale_domain_record.mx", domain, record),
+					testAccCheckDomainRecord(record),
+					testAccCheckDomainRecordAttributes(map[string]schema.SchemaValidateFunc{
+						"name":        ValidateString("mail2"),
+						"record_type": ValidateString("MX"),
+						"content":     ValidateString("mta2"),
+						"prio":        ValidateString("20"),
+						"ttl":         ValidateString("20"),
 					}),
 				),
 			},
@@ -54,7 +56,7 @@ func TestAccDomainRecord(t *testing.T) {
 	})
 }
 
-func testAccCheckDNSRecordExists(n string, domain *egoscale.DNSDomain, record *egoscale.DNSRecord) resource.TestCheckFunc {
+func testAccCheckDomainRecordExists(n string, domain *egoscale.DNSDomain, record *egoscale.DNSRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -79,7 +81,7 @@ func testAccCheckDNSRecordExists(n string, domain *egoscale.DNSDomain, record *e
 	}
 }
 
-func testAccCheckDNSRecord(record *egoscale.DNSRecord) resource.TestCheckFunc {
+func testAccCheckDomainRecord(record *egoscale.DNSRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if record.TTL == 0 {
 			return fmt.Errorf("DNS Domain Record: TTL is zero")
@@ -89,7 +91,7 @@ func testAccCheckDNSRecord(record *egoscale.DNSRecord) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckDNSRecordAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckDomainRecordAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_domain_record" {
@@ -99,11 +101,11 @@ func testAccCheckDNSRecordAttributes(expected map[string]string) resource.TestCh
 			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find domain record")
+		return errors.New("domain_record resource not found in the state")
 	}
 }
 
-func testAccCheckDNSRecordDestroy(s *terraform.State) error {
+func testAccCheckDomainRecordDestroy(s *terraform.State) error {
 	client := GetDNSClient(testAccProvider.Meta())
 
 	for _, rs := range s.RootModule().Resources {
@@ -127,9 +129,9 @@ func testAccCheckDNSRecordDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccDNSRecordCreate = `
+var testAccDomainRecordCreate = fmt.Sprintf(`
 resource "exoscale_domain" "exo" {
-  name = "acceptance.exo"
+  name = "%s"
 }
 
 resource "exoscale_domain_record" "mx" {
@@ -140,11 +142,12 @@ resource "exoscale_domain_record" "mx" {
   prio        = 10
   ttl         = 10
 }
-`
+`,
+	testDomain)
 
-var testAccDNSRecordUpdate = `
+var testAccDomainRecordUpdate = fmt.Sprintf(`
 resource "exoscale_domain" "exo" {
-  name = "acceptance.exo"
+  name = "%s"
 }
 
 resource "exoscale_domain_record" "mx" {
@@ -155,4 +158,5 @@ resource "exoscale_domain_record" "mx" {
   ttl         = 20
   prio        = 20
 }
-`
+`,
+	testDomain)

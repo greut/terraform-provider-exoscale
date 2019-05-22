@@ -8,6 +8,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -24,9 +25,9 @@ func TestAccNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkExists("exoscale_network.net", network),
 					testAccCheckNetwork(network, nil),
-					testAccCheckNetworkAttributes(map[string]string{
-						"name":         "terraform-test-network1",
-						"display_text": "Terraform Acceptance Test (create)",
+					testAccCheckNetworkAttributes(map[string]schema.SchemaValidateFunc{
+						"display_text":   ValidateString("Terraform Acceptance Test (create)"),
+						"tags.managedby": ValidateString("terraform"),
 					}),
 				),
 			}, {
@@ -34,12 +35,11 @@ func TestAccNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNetworkExists("exoscale_network.net", network),
 					testAccCheckNetwork(network, net.ParseIP("10.0.0.1")),
-					testAccCheckNetworkAttributes(map[string]string{
-						"name":         "terraform-test-network2",
-						"display_text": "Terraform Acceptance Test (update)",
-						"start_ip":     "10.0.0.1",
-						"end_ip":       "10.0.0.5",
-						"netmask":      "255.255.255.248",
+					testAccCheckNetworkAttributes(map[string]schema.SchemaValidateFunc{
+						"display_text": ValidateString("Terraform Acceptance Test (update)"),
+						"start_ip":     ValidateString("10.0.0.1"),
+						"end_ip":       ValidateString("10.0.0.5"),
+						"netmask":      ValidateString("255.0.0.0"),
 					}),
 				),
 			},
@@ -89,7 +89,7 @@ func testAccCheckNetwork(network *egoscale.Network, expectedStartIP net.IP) reso
 	}
 }
 
-func testAccCheckNetworkAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckNetworkAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_network" {
@@ -99,7 +99,7 @@ func testAccCheckNetworkAttributes(expected map[string]string) resource.TestChec
 			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return errors.New("Could not find Network")
+		return errors.New("network resource not found in the state")
 	}
 }
 
@@ -155,7 +155,7 @@ resource "exoscale_network" "net" {
 
   start_ip = "10.0.0.1"
   end_ip = "10.0.0.5"
-  netmask = "255.255.255.248"
+  netmask = "255.0.0.0"
 }
 `,
 	defaultExoscaleZone,

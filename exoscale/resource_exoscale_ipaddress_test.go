@@ -1,11 +1,13 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -39,7 +41,15 @@ func TestAccElasticIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckElasticIPExists("exoscale_ipaddress.eip", eip),
 					testAccCheckElasticIPCreate(eip),
-					testAccCheckElasticIPCreateAttributes(defaultExoscaleZone),
+					testAccCheckElasticIPAttributes(map[string]schema.SchemaValidateFunc{
+						"healthcheck_mode":         ValidateString(testEIPHealthcheckMode1),
+						"healthcheck_port":         ValidateString(fmt.Sprint(testEIPHealthcheckPort1)),
+						"healthcheck_path":         ValidateString(testEIPHealthcheckPath1),
+						"healthcheck_interval":     ValidateString(fmt.Sprint(testEIPHealthcheckInterval1)),
+						"healthcheck_timeout":      ValidateString(fmt.Sprint(testEIPHealthcheckTimeout1)),
+						"healthcheck_strikes_ok":   ValidateString(fmt.Sprint(testEIPHealthcheckStrikesOk1)),
+						"healthcheck_strikes_fail": ValidateString(fmt.Sprint(testEIPHealthcheckStrikesFail1)),
+					}),
 				),
 			},
 			{
@@ -47,7 +57,15 @@ func TestAccElasticIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckElasticIPExists("exoscale_ipaddress.eip", eip),
 					testAccCheckElasticIPUpdate(eip),
-					testAccCheckElasticIPUpdateAttributes(defaultExoscaleZone),
+					testAccCheckElasticIPAttributes(map[string]schema.SchemaValidateFunc{
+						"healthcheck_mode":         ValidateString(testEIPHealthcheckMode2),
+						"healthcheck_port":         ValidateString(fmt.Sprint(testEIPHealthcheckPort2)),
+						"healthcheck_path":         ValidateString(testEIPHealthcheckPath2),
+						"healthcheck_interval":     ValidateString(fmt.Sprint(testEIPHealthcheckInterval2)),
+						"healthcheck_timeout":      ValidateString(fmt.Sprint(testEIPHealthcheckTimeout2)),
+						"healthcheck_strikes_ok":   ValidateString(fmt.Sprint(testEIPHealthcheckStrikesOk2)),
+						"healthcheck_strikes_fail": ValidateString(fmt.Sprint(testEIPHealthcheckStrikesFail2)),
+					}),
 				),
 			},
 		},
@@ -179,119 +197,17 @@ func testAccCheckElasticIPUpdate(eip *egoscale.IPAddress) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckElasticIPCreateAttributes(name string) resource.TestCheckFunc {
+func testAccCheckElasticIPAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_ipaddress" {
 				continue
 			}
 
-			if rs.Primary.Attributes["zone"] != name {
-				continue
-			}
-
-			if rs.Primary.Attributes["ip_address"] == "" {
-				return fmt.Errorf("expected ip_address to be set")
-			}
-
-			if rs.Primary.Attributes["healthcheck_mode"] != testEIPHealthcheckMode1 {
-				return fmt.Errorf("expected healthcheck_mode %v, got %v",
-					testEIPHealthcheckMode1,
-					rs.Primary.Attributes["healthcheck_mode"])
-			}
-			if rs.Primary.Attributes["healthcheck_port"] != fmt.Sprint(testEIPHealthcheckPort1) {
-				return fmt.Errorf("expected healthcheck_port %v, got %v",
-					fmt.Sprint(testEIPHealthcheckPort1),
-					rs.Primary.Attributes["healthcheck_port"])
-			}
-			if rs.Primary.Attributes["healthcheck_path"] != testEIPHealthcheckPath1 {
-				return fmt.Errorf("expected healthcheck_path %v, got %v",
-					testEIPHealthcheckPath1,
-					rs.Primary.Attributes["healthcheck_path"])
-			}
-			if rs.Primary.Attributes["healthcheck_interval"] != fmt.Sprint(testEIPHealthcheckInterval1) {
-				return fmt.Errorf("expected healthcheck_interval %v, got %v",
-					fmt.Sprint(testEIPHealthcheckInterval1),
-					rs.Primary.Attributes["healthcheck_interval"])
-			}
-			if rs.Primary.Attributes["healthcheck_timeout"] != fmt.Sprint(testEIPHealthcheckTimeout1) {
-				return fmt.Errorf("expected healthcheck_timeout %v, got %v",
-					fmt.Sprint(testEIPHealthcheckTimeout1),
-					rs.Primary.Attributes["healthcheck_timeout"])
-			}
-			if rs.Primary.Attributes["healthcheck_strikes_ok"] != fmt.Sprint(testEIPHealthcheckStrikesOk1) {
-				return fmt.Errorf("expected healthcheck_strikes_ok %v, got %v",
-					fmt.Sprint(testEIPHealthcheckStrikesOk1),
-					rs.Primary.Attributes["healthcheck_strikes_ok"])
-			}
-			if rs.Primary.Attributes["healthcheck_strikes_fail"] != fmt.Sprint(testEIPHealthcheckStrikesFail1) {
-				return fmt.Errorf("expected healthcheck_strikes_fail %v, got %v",
-					fmt.Sprint(testEIPHealthcheckStrikesFail1),
-					rs.Primary.Attributes["healthcheck_strikes_fail"])
-			}
-
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("Could not find elastic ip %s", name)
-	}
-}
-
-func testAccCheckElasticIPUpdateAttributes(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "exoscale_ipaddress" {
-				continue
-			}
-
-			if rs.Primary.Attributes["zone"] != name {
-				continue
-			}
-
-			if _, ok := rs.Primary.Attributes["tags"]; ok {
-				return fmt.Errorf("tags still present")
-			}
-
-			if rs.Primary.Attributes["healthcheck_mode"] != testEIPHealthcheckMode2 {
-				return fmt.Errorf("expected healthcheck_mode %v, got %v",
-					testEIPHealthcheckMode2,
-					rs.Primary.Attributes["healthcheck_mode"])
-			}
-			if rs.Primary.Attributes["healthcheck_port"] != fmt.Sprint(testEIPHealthcheckPort2) {
-				return fmt.Errorf("expected healthcheck_port %v, got %v",
-					fmt.Sprint(testEIPHealthcheckPort2),
-					rs.Primary.Attributes["healthcheck_port"])
-			}
-			if rs.Primary.Attributes["healthcheck_path"] != testEIPHealthcheckPath2 {
-				return fmt.Errorf("expected healthcheck_path %v, got %v",
-					testEIPHealthcheckPath2,
-					rs.Primary.Attributes["healthcheck_path"])
-			}
-			if rs.Primary.Attributes["healthcheck_interval"] != fmt.Sprint(testEIPHealthcheckInterval2) {
-				return fmt.Errorf("expected healthcheck_interval %v, got %v",
-					fmt.Sprint(testEIPHealthcheckInterval2),
-					rs.Primary.Attributes["healthcheck_interval"])
-			}
-			if rs.Primary.Attributes["healthcheck_timeout"] != fmt.Sprint(testEIPHealthcheckTimeout2) {
-				return fmt.Errorf("expected healthcheck_timeout %v, got %v",
-					fmt.Sprint(testEIPHealthcheckTimeout2),
-					rs.Primary.Attributes["healthcheck_timeout"])
-			}
-			if rs.Primary.Attributes["healthcheck_strikes_ok"] != fmt.Sprint(testEIPHealthcheckStrikesOk2) {
-				return fmt.Errorf("expected healthcheck_strikes_ok %v, got %v",
-					fmt.Sprint(testEIPHealthcheckStrikesOk2),
-					rs.Primary.Attributes["healthcheck_strikes_ok"])
-			}
-			if rs.Primary.Attributes["healthcheck_strikes_fail"] != fmt.Sprint(testEIPHealthcheckStrikesFail2) {
-				return fmt.Errorf("expected healthcheck_strikes_fail %v, got %v",
-					fmt.Sprint(testEIPHealthcheckStrikesFail2),
-					rs.Primary.Attributes["healthcheck_strikes_fail"])
-			}
-
-			return nil
-		}
-
-		return fmt.Errorf("Could not find elastic ip %s", name)
+		return errors.New("ipaddress resource not found in the state")
 	}
 }
 

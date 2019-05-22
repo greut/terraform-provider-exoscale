@@ -1,12 +1,14 @@
 package exoscale
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"testing"
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -26,8 +28,11 @@ func TestAccSecondaryIP(t *testing.T) {
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckElasticIPExists("exoscale_ipaddress.eip", eip),
 					testAccCheckSecondaryIPExists("exoscale_secondary_ipaddress.ip", vm, secondaryip),
-					testAccCheckSecondaryIPAttributes(secondaryip),
-					testAccCheckSecondaryIPCreateAttributes(),
+					testAccCheckSecondaryIP(secondaryip),
+					testAccCheckSecondaryIPAttributes(map[string]schema.SchemaValidateFunc{
+						"nic_id":     ValidateUUID(),
+						"network_id": ValidateUUID(),
+					}),
 				),
 			},
 		},
@@ -54,7 +59,7 @@ func testAccCheckSecondaryIPExists(n string, vm *egoscale.VirtualMachine, second
 	}
 }
 
-func testAccCheckSecondaryIPAttributes(nic *egoscale.NicSecondaryIP) resource.TestCheckFunc {
+func testAccCheckSecondaryIP(nic *egoscale.NicSecondaryIP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if nic.IPAddress == nil {
 			return fmt.Errorf("ip address is nil")
@@ -64,21 +69,17 @@ func testAccCheckSecondaryIPAttributes(nic *egoscale.NicSecondaryIP) resource.Te
 	}
 }
 
-func testAccCheckSecondaryIPCreateAttributes() resource.TestCheckFunc {
+func testAccCheckSecondaryIPAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_secondary_ipaddress" {
 				continue
 			}
-			ip := net.ParseIP(rs.Primary.Attributes["ip_address"])
-			if ip == nil {
-				return fmt.Errorf("Bad IP %s", rs.Primary.Attributes["ip_address"])
-			}
 
-			return nil
+			return testResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
-		return fmt.Errorf("could not find secondary IP address")
+		return errors.New("secondary_ipaddress resource not found in the state")
 	}
 }
 

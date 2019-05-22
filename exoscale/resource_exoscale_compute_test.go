@@ -7,6 +7,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -24,11 +25,13 @@ func TestAccCompute(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckCompute(vm),
-					testAccCheckComputeAttributes(map[string]string{
-						"display_name": "terraform-test-compute1",
-						"size":         "Micro",
-						"disk_size":    "12",
-						"key_pair":     "terraform-test-keypair",
+					testAccCheckComputeAttributes(map[string]schema.SchemaValidateFunc{
+						"template":     ValidateString(defaultExoscaleTemplate),
+						"display_name": ValidateString("terraform-test-compute1"),
+						"size":         ValidateString("Micro"),
+						"disk_size":    ValidateString("12"),
+						"key_pair":     ValidateString("terraform-test-keypair"),
+						"tags.test":    ValidateString("terraform"),
 					}),
 				),
 			},
@@ -38,14 +41,15 @@ func TestAccCompute(t *testing.T) {
 					testAccCheckSecurityGroupExists("exoscale_security_group.sg", sg),
 					testAccCheckComputeExists("exoscale_compute.vm", vm),
 					testAccCheckCompute(vm),
-					testAccCheckComputeAttributes(map[string]string{
-						"display_name":      "terraform-test-compute2",
-						"size":              "Small",
-						"disk_size":         "18",
-						"key_pair":          "terraform-test-keypair",
-						"security_groups.#": "2",
-						"ip6":               "true",
-						"user_data":         "#cloud-config\npackage_upgrade: true\n",
+					testAccCheckComputeAttributes(map[string]schema.SchemaValidateFunc{
+						"template":          ValidateString(defaultExoscaleTemplate),
+						"display_name":      ValidateString("terraform-test-compute2"),
+						"size":              ValidateString("Small"),
+						"disk_size":         ValidateString("18"),
+						"key_pair":          ValidateString("terraform-test-keypair"),
+						"security_groups.#": ValidateString("2"),
+						"ip6":               ValidateString("true"),
+						"user_data":         ValidateString("#cloud-config\npackage_upgrade: true\n"),
 					}),
 				),
 			},
@@ -92,7 +96,7 @@ func testAccCheckCompute(vm *egoscale.VirtualMachine) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckComputeAttributes(expected map[string]string) resource.TestCheckFunc {
+func testAccCheckComputeAttributes(expected map[string]schema.SchemaValidateFunc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "exoscale_compute" {
