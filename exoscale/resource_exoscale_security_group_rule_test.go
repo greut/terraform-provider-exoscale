@@ -118,7 +118,7 @@ func testAccCheckSecurityGroupRuleAttributes(expected map[string]schema.SchemaVa
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("security_group_rule resource not found in the state")

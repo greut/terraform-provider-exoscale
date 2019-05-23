@@ -80,7 +80,7 @@ func testAccDatasourceComputeTemplateAttributes(expected map[string]schema.Schem
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("compute_template datasource not found in the state")

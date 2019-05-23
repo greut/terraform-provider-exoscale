@@ -38,9 +38,9 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-// testResourceAttributes compares a map of resource attributes against a map
+// checkResourceAttributes compares a map of resource attributes against a map
 // of expected resource attributes and performs validation on the values.
-func testResourceAttributes(want map[string]schema.SchemaValidateFunc, got map[string]string) error {
+func checkResourceAttributes(want map[string]schema.SchemaValidateFunc, got map[string]string) error {
 	for attr, validateFunc := range want {
 		v, ok := got[attr]
 		if !ok {
@@ -51,12 +51,56 @@ func testResourceAttributes(want map[string]schema.SchemaValidateFunc, got map[s
 				for _, e := range es {
 					errors[i] = e.Error()
 				}
-				return fmt.Errorf("invalid value for attribute %q:\n%s\n", attr, strings.Join(errors, "\n"))
+				if len(errors) > 0 {
+					return fmt.Errorf("invalid value for attribute %q:\n%s\n", attr, strings.Join(errors, "\n"))
+				}
 			}
 		}
 	}
 
 	return nil
+}
+
+func TestCheckResourceAttributes(t *testing.T) {
+	type testCase struct {
+		desc        string
+		want        map[string]schema.SchemaValidateFunc
+		got         map[string]string
+		expectError bool
+	}
+
+	for _, tc := range []testCase{
+		{
+			desc:        "empty attributes map",
+			want:        map[string]schema.SchemaValidateFunc{"something": ValidateString("anything")},
+			got:         nil,
+			expectError: true,
+		},
+		{
+			desc:        "attribute absent",
+			want:        map[string]schema.SchemaValidateFunc{"something": ValidateString("this")},
+			got:         map[string]string{"something else": "that"},
+			expectError: true,
+		},
+		{
+			desc:        "attribute with unexpected value",
+			want:        map[string]schema.SchemaValidateFunc{"something": ValidateString("this")},
+			got:         map[string]string{"something": "that"},
+			expectError: true,
+		},
+		{
+			desc: "attribute with expected value",
+			want: map[string]schema.SchemaValidateFunc{"something": ValidateString("this")},
+			got:  map[string]string{"something": "this"},
+		},
+	} {
+		err := checkResourceAttributes(tc.want, tc.got)
+		if err != nil && !tc.expectError {
+			t.Errorf("test case %q failed: expected no error but got: %s", tc.desc, err)
+		} else if err == nil && tc.expectError {
+			t.Errorf("test case failed: %s: expected an error but got none", tc.desc)
+		}
+	}
 }
 
 var defaultExoscaleZone = "ch-gva-2"

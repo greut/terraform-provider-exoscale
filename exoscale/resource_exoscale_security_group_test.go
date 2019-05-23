@@ -78,7 +78,7 @@ func testAccCheckSecurityGroupAttributes(expected map[string]schema.SchemaValida
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("security_group resource not found in the state")

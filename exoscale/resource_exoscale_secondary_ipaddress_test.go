@@ -76,7 +76,7 @@ func testAccCheckSecondaryIPAttributes(expected map[string]schema.SchemaValidate
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("secondary_ipaddress resource not found in the state")

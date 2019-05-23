@@ -96,7 +96,7 @@ func testAccCheckNetworkAttributes(expected map[string]schema.SchemaValidateFunc
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("network resource not found in the state")

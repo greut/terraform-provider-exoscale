@@ -73,7 +73,7 @@ func testAccCheckSSHKeyPairAttributes(expected map[string]schema.SchemaValidateF
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("ssh_keypair resource not found in the state")

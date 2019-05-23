@@ -204,7 +204,7 @@ func testAccCheckElasticIPAttributes(expected map[string]schema.SchemaValidateFu
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("ipaddress resource not found in the state")

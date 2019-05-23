@@ -98,7 +98,7 @@ func testAccCheckDomainRecordAttributes(expected map[string]schema.SchemaValidat
 				continue
 			}
 
-			return testResourceAttributes(expected, rs.Primary.Attributes)
+			return checkResourceAttributes(expected, rs.Primary.Attributes)
 		}
 
 		return errors.New("domain_record resource not found in the state")
