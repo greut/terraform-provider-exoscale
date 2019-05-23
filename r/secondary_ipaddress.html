@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages an elastic IP address assignement to a compute resource">
+
+    <title>Exoscale: exoscale_secondary_ipaddress - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-secondary-ipaddress" class="page-exoscale-exoscale-secondary-ipaddress">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_secondary_ipaddress">exoscale_secondary_ipaddress</h1>
+
+<p>A Secondary IP Address expresses the attribution of an extra IP address to a compute resource.</p>
+
+<p>~&gt; <strong>NOTE</strong> The network interfaces of the compute resource itself still have to be configured accordingly.</p>
+
+<h3 id="secondary_ip_address">Secondary IP Address</h3>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_secondary_ipaddress&quot; &quot;ingress_ip&quot; {
+  compute_id = &quot;${exoscale_compute.mymachine.id}&quot;
+  ip_address = &quot;${exoscale_ipaddress.myip.ip_address}&quot;
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>compute_id</code> - (Required) id of the <a href="compute.html">compute resource</a></p>
+</li>
+
+<li>
+<p><code>ip_address</code> - (Required) IP address to use, preferably this comes from an <a href="ip_address.html">elastic IP</a></p>
+</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li>
+<p><code>nic_id</code>: id of the NIC</p>
+</li>
+
+<li>
+<p><code>network_id</code>: id of the Network (of the NIC)</p>
+</li>
+</ul>
+
+<h2 id="import">Import</h2>
+
+<p>This resource is automatically imported when you import a compute resource.</p>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

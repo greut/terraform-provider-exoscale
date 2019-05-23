@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Retrieve information about a compute template.">
+
+    <title>Exoscale: exoscale_compute_template - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-compute-template" class="page-exoscale-exoscale-compute-template">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_compute_template">exoscale_compute_template</h1>
+
+<p>Get information on an Compute <a href="https://www.exoscale.com/templates/">template</a> for use in other resources such as a <a href="../r/compute.html">Compute Instance</a>.</p>
+
+<h2 id="example_usage">Example Usage</h2>
+
+<pre class="hcl"><code class="hcl">locals {
+  zone = &quot;ch-gva-2&quot;
+}
+
+data &quot;exoscale_compute_template&quot; &quot;ubuntu&quot; {
+  zone = &quot;${local.zone}&quot;
+  name = &quot;Linux Ubuntu 18.04 LTS 64-bit&quot;
+}
+
+resource &quot;exoscale_compute&quot; &quot;my_server&quot; {
+  zone         = &quot;${local.zone}&quot;
+  display_name = &quot;my server&quot;
+  template     = &quot;${data.exoscale_compute_template.ubuntu.id}&quot;
+  disk_size    = 10
+  key_pair     = &quot;my key&quot;
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>zone</code> - (Required) Name of the <a href="https://www.exoscale.com/datacenters/">zone</a></p>
+</li>
+
+<li>
+<p><code>name</code> - Name of the template</p>
+</li>
+
+<li>
+<p><code>id</code> - ID of the template</p>
+</li>
+
+<li>
+<p><code>filter</code> - Template search filter, must be either <code>featured</code> (official Exoscale templates), <code>community</code> (community-contributed templates) or <code>mine</code> (custom templates private to my organization). Default is <code>featured</code>.</p>
+</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li>
+<p><code>id</code> - ID of the template</p>
+</li>
+
+<li>
+<p><code>name</code> - Name of the template</p>
+</li>
+
+<li>
+<p><code>username</code> - Username to use to log into a Compute Instance based on this template</p>
+</li>
+</ul>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

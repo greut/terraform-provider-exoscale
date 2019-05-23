@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages a domain record">
+
+    <title>Exoscale: exoscale_domain_record - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-domain-record" class="page-exoscale-exoscale-domain-record">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_domain_record">exoscale_domain_record</h1>
+
+<p>Defines a DNS entry linked with a domain.</p>
+
+<h2 id="usage_example">Usage example</h2>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_domain_record&quot; &quot;glop&quot; {
+  domain = &quot;${exoscale_domain.exo.id}&quot;
+  name = &quot;glap&quot;
+  record_type = &quot;CNAME&quot;
+  content = &quot;${exoscale_domain.exo.name}&quot;
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>domain</code> - (Required) domain it’s linked to</p>
+</li>
+
+<li>
+<p><code>name</code> - (Required) name of the DNS record</p>
+</li>
+
+<li>
+<p><code>record_type</code> - (Required) type of the DNS record. E.g. <code>A</code>, <code>CNAME</code>, <code>MX</code>, etc.</p>
+</li>
+
+<li>
+<p><code>content</code> - (Required) value of the DNS record</p>
+</li>
+
+<li>
+<p><code>ttl</code> - time to live</p>
+</li>
+
+<li>
+<p><code>prio</code> - priority</p>
+</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li><code>hostname</code> - full name, useful for linking <code>A</code> records into <code>CNAME</code>.</li>
+</ul>
+
+<h2 id="import">Import</h2>
+
+<p>A record is imported with its domain resource. Importing an Domain Record resource is also possible by id.</p>
+
+<pre class="shell"><code class="shell"># by id
+$ terraform import exoscale_domain_record.www 12480484</code></pre>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

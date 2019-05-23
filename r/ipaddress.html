@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages an elastic IP address.">
+
+    <title>Exoscale: exoscale_ipaddress - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-ipaddress" class="page-exoscale-exoscale-ipaddress">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_ipaddress">exoscale_ipaddress</h1>
+
+<p>The <a href="https://community.exoscale.com/documentation/compute/eip/">Elastic IP</a> (EIP) address is an address that belongs to a specific zone and may be associated to one or many compute instances. See <a href="secondary_ipaddress.html">secondary_ipaddress</a>. To provision a <em>managed</em> Elastic IP, use the <code>healthcheck_*</code> attributes.</p>
+
+<h3 id="usage_example">Usage example</h3>
+
+<pre><code>resource &quot;exoscale_ipaddress&quot; &quot;myip&quot; {
+  zone = &quot;ch-dk-2&quot;
+  tags = {
+    usage = &quot;load-balancer&quot;
+  }
+}</code></pre>
+
+<p>Managed EIP:</p>
+
+<pre><code>resource &quot;exoscale_ipaddress&quot; &quot;myip&quot; {
+  zone                     = &quot;ch-dk-2&quot;
+  healthcheck_mode         = &quot;http&quot;
+  healthcheck_port         = 8000
+  healthcheck_path         = &quot;/status&quot;
+  healthcheck_interval     = 5
+  healthcheck_timeout      = 2
+  healthcheck_strikes_ok   = 2
+  healthcheck_strikes_fail = 3
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li><code>zone</code> - (Required) name of the <a href="https://www.exoscale.com/datacenters/">zone</a></li>
+
+<li><code>healthcheck_mode</code> - healthcheck probing mode (must be either <code>tcp</code> or <code>http</code>)</li>
+
+<li><code>healthcheck_port</code> - healthcheck service port to probe (must be between <code>1</code> and <code>65535</code>)</li>
+
+<li><code>healthcheck_path</code> - healthcheck probe HTTP request path (must be specified in <code>http</code> mode)</li>
+
+<li><code>healthcheck_interval</code> - healthcheck probing interval in seconds (must be between <code>5</code> and <code>300</code>)</li>
+
+<li><code>healthcheck_timeout</code> - time in seconds before considering a healthcheck probing failed (must be between <code>2</code> and <code>60</code>)</li>
+
+<li><code>healthcheck_strikes_ok</code> - number of successful healthcheck probes before considering the target healthy (must be between <code>1</code> and <code>20</code>)</li>
+
+<li><code>healthcheck_strikes_fail</code> - number of unsuccessful healthcheck probes before considering the target unhealthy (must be between <code>1</code> and <code>20</code>)</li>
+
+<li><code>tags</code> - dictionary of tags (key/value)</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li><code>ip_address</code> - IP address</li>
+</ul>
+
+<h2 id="import">Import</h2>
+
+<p>Importing an Elastic IP resource is possible by name or id.</p>
+
+<pre class="shell"><code class="shell"># by name
+$ terraform import exoscale_ipaddress.myip 159.100.251.224
+
+# by id
+$ terraform import exoscale_ipaddress.myip eb556678-ec59-4be6-8c54-0406ae0f6da6</code></pre>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

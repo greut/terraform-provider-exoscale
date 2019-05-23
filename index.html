@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="The Exoscale provider is used to interact with the many resources offered by Exoscale.com. The provider needs to be configured with the proper credentials before it can be used.">
+
+    <title>Provider: Exoscale - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-home" class="page-provider-exoscale">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_provider">Exoscale Provider</h1>
+
+<h2 id="usage">Usage</h2>
+
+<p>What follows below is the usage instructions for fully utilizing the Exoscale resource plugin. Additional documentation can be found in the examples directory.</p>
+
+<h3 id="provider_requirements">Provider requirements</h3>
+
+<pre class="hcl"><code class="hcl">provider &quot;exoscale&quot; {
+  version = &quot;~&gt; 0.11&quot;
+  key = &quot;EXO...&quot;
+  secret = &quot;...&quot;
+
+  timeout = 60          # default: waits 60 seconds in total for a resource
+  delay = 5             # default: waits 5 seconds between each poll request
+}</code></pre>
+
+<h1 id="or">or</h1>
+
+<pre class="hcl"><code class="hcl">provider &quot;exoscale&quot; {
+  version = &quot;~&gt; 0.11&quot;
+
+  config = &quot;cloudstack.ini&quot;   # default: filename
+  region = &quot;cloudstack&quot;       # default: section name
+}</code></pre>
+
+<p>You are required to provide at least the API token and secret key in order to make use of the remaining Terraform resources.</p>
+
+<p>The <code>timeout</code> is the maximum amount of time (in seconds, default: <code>60</code>) to wait for async tasks to complete. Currently, this is used during the creation of <code>compute</code> and <code>anti-affinity</code> resources.</p>
+
+<h3 id=""><code>cloudstack.ini</code></h3>
+
+<pre class="ini"><code class="ini">[cloudstack]
+
+endpoint = &quot;https://api.exoscale.ch/compute&quot;
+key = &quot;EXO...&quot;
+token = &quot;...&quot;</code></pre>
+
+<h3 id="environment_variables">Environment variables</h3>
+
+<p>You can specify the following keys using those environment variables.</p>
+
+<ul>
+<li>
+<p><code>key</code> - <code>EXOSCALE_KEY</code>, or <code>EXOSCALE_API_KEY</code>;</p>
+</li>
+
+<li>
+<p><code>secret</code> - <code>EXOSCALE_SECRET</code>, or <code>EXOSCALE_API_SECRET</code>;</p>
+</li>
+
+<li>
+<p><code>config</code> - <code>EXOSCALE_CONFIG</code>;</p>
+</li>
+
+<li>
+<p><code>region</code> - <code>EXOSCALE_REGION</code>;</p>
+</li>
+
+<li>
+<p><code>timeout</code> - <code>EXOSCALE_TIMEOUT</code> global timeout;</p>
+</li>
+
+<li>
+<p><code>compute_endpoint</code> - <code>EXOSCALE_ENDPOINT</code>, or <code>EXOSCALE_COMPUTE_ENDPOINT</code>;</p>
+</li>
+
+<li>
+<p><code>dns_endpoint</code> - <code>EXOSCALE_DNS_ENDPOINT</code>.</p>
+</li>
+</ul>
+
+<h2 id="timeouts">Timeouts</h2>
+
+<p>All resources support controlling the waiting time of the four basic operations.</p>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_...&quot; &quot;name&quot; {
+  timeouts {
+    create = &quot;1m&quot;
+    read = &quot;2m&quot;
+    update = &quot;3m&quot;
+    delete = &quot;4m&quot;
+  }
+}</code></pre>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

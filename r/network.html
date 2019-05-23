@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages a private network.">
+
+    <title>Exoscale: exoscale_network - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-network" class="page-exoscale-exoscale-network">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_network">exoscale_network</h1>
+
+<p>The <code>exoscale_network</code> resource manages a <a href="https://community.exoscale.com/documentation/compute/private-networks/">Private Network</a>, a virtual L2 network segment shared only among Compute instances attached to it.</p>
+
+<h2 id="usage">Usage</h2>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_network&quot; &quot;unmanaged&quot; {
+  name = &quot;myPrivNet&quot;
+  display_text = &quot;description&quot;
+  zone = &quot;ch-gva-2&quot;
+  network_offering = &quot;PrivNet&quot;
+
+  tags = {
+    # ...
+  }
+}</code></pre>
+
+<p><em>Managed</em> Private Network (note: this feature is currently only available in the <code>CH-GVA-2</code> zone):</p>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_network&quot; &quot;managed&quot; {
+  name = &quot;myPrivNet&quot;
+  display_text = &quot;description&quot;
+  zone = &quot;ch-gva-2&quot;
+  network_offering = &quot;PrivNet&quot;
+
+  start_ip = &quot;10.0.0.20&quot;
+  end_ip = &quot;10.0.0.254&quot;
+  netmask = &quot;255.255.255.0&quot;
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>zone</code> - (Required) name of the zone</p>
+</li>
+
+<li>
+<p><code>name</code> - (Required) name of the network</p>
+</li>
+
+<li>
+<p><code>network_offering</code> - (Required) network offering name</p>
+</li>
+
+<li>
+<p><code>display_text</code> - Description of the network</p>
+</li>
+
+<li>
+<p><code>start_ip</code> - First address of IP range used by the DHCP service to automatically assign. Required for <em>managed</em> Private Networks.</p>
+</li>
+
+<li>
+<p><code>end_ip</code> - Last address of the IP range used by the DHCP service. Required for <em>managed</em> Private Networks.</p>
+</li>
+
+<li>
+<p><code>netmask</code> - Netmask defining the IP network allowed for the static lease (see <code>exoscale_nic</code> resource). Required for <em>managed</em> Private Networks.</p>
+</li>
+
+<li>
+<p><code>tags</code> - dictionary of tags (key/value)</p>
+</li>
+</ul>
+
+<h2 id="import">Import</h2>
+
+<pre class="shell"><code class="shell"># by name
+$ terraform import exoscale_network.net myPrivNet
+
+# by id
+$ terraform import exoscale_network.net ID</code></pre>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

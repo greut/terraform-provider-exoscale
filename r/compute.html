@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages a compute resource.">
+
+    <title>Exoscale: exoscale_compute - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-compute" class="page-exoscale-exoscale-compute">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_compute">exoscale_compute</h1>
+
+<p>Exoscale computing service allows you to create a performant cloud virtual machine in less than 35 seconds.</p>
+
+<h2 id="example_usage">Example Usage</h2>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_compute&quot; &quot;mymachine&quot; {
+  display_name = &quot;mymachine&quot;
+  template = &quot;Linux Debian 9 64-bit&quot;
+  size = &quot;Medium&quot;
+  disk_size = 10
+  key_pair = &quot;me@mymachine&quot;
+  state = &quot;Running&quot;
+
+  affinity_groups = []
+  security_groups = [&quot;default&quot;]
+
+  ip6 = false
+
+  user_data = &lt;&lt;EOF
+#cloud-config
+manage_etc_hosts: localhost
+EOF
+
+  tags = {
+    production = &quot;true&quot;
+  }
+
+  timeouts {
+    create = &quot;60m&quot;
+    delete = &quot;2h&quot;
+  }
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>display_name</code> - (Required) initial <code>hostname</code></p>
+</li>
+
+<li>
+<p><code>template</code> - (Required) name or ID of the <a href="https://www.exoscale.com/templates/">template</a>. If a name is provided, only <em>featured</em> templates are available.</p>
+</li>
+
+<li>
+<p><code>size</code> - (Required) size of the <a href="https://www.exoscale.com/pricing/#/compute/">instance</a>, e.g. Tiny, Small, Medium, Large, etc.</p>
+</li>
+
+<li>
+<p><code>disk_size</code> - (Required) size of the root disk in GiB (at least 10)</p>
+</li>
+
+<li>
+<p><code>zone</code> - (Required) name of the <a href="https://www.exoscale.com/datacenters/">zone</a></p>
+</li>
+
+<li>
+<p><code>user_data</code> - <a href="http://cloudinit.readthedocs.io/en/latest/">cloud-init</a> configuration. Whenever possible don’t base64 encode neither gzip it yourself. This will be automatically taken care of on your behalf by the provider.</p>
+</li>
+
+<li>
+<p><code>key_pair</code> - (Required) name of the SSH key pair to be installed</p>
+</li>
+
+<li>
+<p><code>keyboard</code> - keyboard configuration (at creation time only)</p>
+</li>
+
+<li>
+<p><code>state</code> - state of the virtual machine. E.g. <code>Running</code> or <code>Stopped</code></p>
+</li>
+
+<li>
+<p><code>affinity_groups</code> - list of <a href="affinity_group.html">affinity group</a> names (at creation time only)</p>
+</li>
+
+<li>
+<p><code>affinity_group_ids</code> - list of <a href="affinity_group.html">affinity group</a> IDs (at creation time only)</p>
+</li>
+
+<li>
+<p><code>security_groups</code> - list of <a href="security_group.html">security groups</a></p>
+</li>
+
+<li>
+<p><code>ip4</code> - activate IPv4 (only <code>true</code>)</p>
+</li>
+
+<li>
+<p><code>ip6</code> - activate IPv6 (<code>false</code> by default)</p>
+</li>
+
+<li>
+<p><code>tags</code> - dictionary of tags (key / value)</p>
+</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li>
+<p><code>name</code> - name of the machine (<code>hostname</code>)</p>
+</li>
+
+<li>
+<p><code>username</code> - User to connect when using SSH</p>
+</li>
+
+<li>
+<p><code>password</code> - Initial password and/or encrypted password</p>
+</li>
+
+<li>
+<p><code>ip_address</code> - IP Address of the main network interface</p>
+</li>
+
+<li>
+<p><code>ip6_address</code> - IPv6 Address of the main network interface</p>
+</li>
+</ul>
+
+<h2 id="import">Import</h2>
+
+<p>Importing Compute resource imports the compute as well as the <a href="secondary_ipaddress.html"><code>exoscale_secondary_ipaddress</code></a> and <a href="nic.html"><code>exoscale_nic</code></a>.</p>
+
+<pre class="shell"><code class="shell"># by name
+$ terraform import exoscale_compute.VM-1 default
+
+# by id
+$ terraform import exoscale_compute.VM-1 eb556678-ec59-4be6-8c54-0406ae0f6da6</code></pre>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>

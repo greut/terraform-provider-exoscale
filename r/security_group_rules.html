@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manages a set of rules to a security group.">
+
+    <title>Exoscale: exoscale_security_group_rules - Terraform by HashiCorp</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
+    
+  </head>
+
+  <body id="page-docs-exoscale-security-group_rules" class="page-exoscale-exoscale-security-group-rules">
+
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+          <a class="navbar-item" href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale Terraform provider</a>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-start is-active">
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/issues">issues</a>
+          <a class="navbar-item" href="https://github.com/exoscale/terraform-provider-exoscale/">source</a>
+        </div>
+        <div class="navbar-end is-right">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/terraform-provider-exoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+          <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=terraform-provider-exoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px" style="height:30px !important"></iframe>
+            </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+    <div class="container section">
+  <div class="columns">
+    <div id="docs-sidebar" class="column is-one-third" role="complementary">
+              <aside class="menu" role="complimentary">
+            <p class="menu-label">
+                <a href="https://exoscale.github.io/terraform-provider-exoscale">Exoscale resources</a>
+            </p>
+            <ul class="menu-list">
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/affinity_group.html">exoscale_affinity_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/compute.html">exoscale_compute</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain.html">exoscale_domain</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/domain_record.html">exoscale_domain_record</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ipaddress.html">exoscale_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/network.html">exoscale_network</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/nic.html">exoscale_nic</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group.html">exoscale_security_group</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rule.html">exoscale_security_group_rule</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/security_group_rules.html">exoscale_security_group_rules</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/secondary_ipaddress.html">exoscale_secondary_ipaddress</a>
+                </li>
+
+                <li>
+                    <a href="https://exoscale.github.io/terraform-provider-exoscale/r/ssh_keypair.html">exoscale_ssh_keypair</a>
+                </li>
+            </ul>
+        </aside>
+
+    </div>
+
+    <article id="inner" class="column content" role="main">
+          
+<h1 id="exoscale_security_group_rules">exoscale_security_group_rules</h1>
+
+<p>A security group rules represents a set of <code>ingress</code> and/or <code>egress</code> rules which has to be linked to a <code>exoscale_security_group</code>.</p>
+
+<h2 id="example_usage">Example usage</h2>
+
+<pre class="hcl"><code class="hcl">resource &quot;exoscale_security_group_rules&quot; &quot;http&quot; {
+  security_group_id = &quot;${exoscale_security_group.http.id}&quot;
+
+  ingress {
+    protocol = &quot;TCP&quot;
+    cidr_list = [&quot;0.0.0.0/0&quot;, &quot;::/0&quot;]
+    ports = [&quot;80&quot;, &quot;8000-8888&quot;]
+    user_security_group_list = [&quot;default&quot;, &quot;etcd&quot;]
+  }
+
+  egress {
+    // ...
+  }
+}</code></pre>
+
+<h2 id="argument_reference">Argument Reference</h2>
+
+<ul>
+<li>
+<p><code>security_group_id</code> - (Required) which security group by name the rule applies to</p>
+</li>
+
+<li>
+<p><code>security_group</code> - (Required) which security group by id the rule applies to</p>
+</li>
+
+<li>
+<p><code>egress</code> or <code>ingress</code> - set of rules for the incoming or outgoing traffic</p>
+
+<ul>
+<li>
+<p><code>protocol</code> - (Required) the protocol, e.g. <code>TCP</code>, <code>UDP</code>, <code>ICMP</code>, <code>ICMPv6</code>, .., or <code>ALL</code></p>
+</li>
+
+<li>
+<p><code>description</code> - human description</p>
+</li>
+
+<li>
+<p><code>ports</code> - a set of port ranges</p>
+</li>
+
+<li>
+<p><code>icmp_type</code> and <code>icmp_code</code> - for <code>ICMP</code>, <code>ICMPv6</code> traffic</p>
+</li>
+
+<li>
+<p><code>cidr_list</code> - source/destination of the traffic as an IP subnet</p>
+</li>
+
+<li>
+<p><code>user_security_group_list</code> - source/destination of the traffic identified by a security group</p>
+</li>
+</ul>
+</li>
+</ul>
+
+<h2 id="attributes_reference">Attributes Reference</h2>
+
+<ul>
+<li>
+<p><code>security_group</code> - Name of the security group</p>
+</li>
+
+<li>
+<p><code>security_group_id</code> - Identifier of the security group</p>
+</li>
+</ul>
+
+
+    </article>
+  </div>
+</div>
+
+
+    <footer class="footer" style="clear:both">
+        <div class="container">
+            <div class="content has-text-centered">
+                <p>Made with ❤️ in Lausanne, Switzerland 🇨🇭.</p>
+                Hosted on <a href="https://github.com/exoscale/terraform-provider-exoscale">GitHub</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+  </body>
+</html>
